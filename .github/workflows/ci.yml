@@ -16,7 +16,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y python3 make g++
       - run: npm ci
         env:
-          npm_config_build_from_source: true
+          npm_config_build_from_source: better-sqlite3
       - run: npx tsc --noEmit -p tsconfig.node.json
       - run: npx tsc --noEmit -p tsconfig.web.json
 
@@ -30,7 +30,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y python3 make g++
       - run: npm ci
         env:
-          npm_config_build_from_source: true
+          npm_config_build_from_source: better-sqlite3
       - run: npm run lint
 
   test:
@@ -43,7 +43,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y python3 make g++
       - run: npm ci
         env:
-          npm_config_build_from_source: true
+          npm_config_build_from_source: better-sqlite3
       - run: npm run test
 
   build:
@@ -57,5 +57,5 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y python3 make g++
       - run: npm ci
         env:
-          npm_config_build_from_source: true
+          npm_config_build_from_source: better-sqlite3
       - run: npm run build
