@@ -1,0 +1,334 @@
+@import 'tailwindcss';
+
+/* Nunito Variable is bundled locally via @fontsource-variable/nunito,
+   imported in main.tsx — no runtime network fetch. */
+
+:root {
+  --bg-primary: #08070a;
+  --bg-secondary: #161518;
+  --bg-tertiary: #242327;
+  --bg-card: #19181b;
+  --border: rgba(255, 255, 255, 0.08);
+  --separator: #38383a;
+  --text-primary: #f5f5f7;
+  --text-secondary: #a1a1a6;
+  --text-muted: #6e6e73;
+  --accent-green: #30d158;
+  --accent-red: #ff453a;
+  /* --accent-blue is the de-facto "primary action / neutral" token across the
+     app; theme presets re-point it at the active accent so buttons, active nav,
+     range pickers, and neutral chart lines all recolor together. */
+  --accent-blue: #0a84ff;
+  --accent-purple: #bf5af2;
+  --accent-amber: #ff9f0a;
+  --accent-cyan: #64d2ff;
+  --accent-orange: #f97316;
+
+  /* ---- Semantic accent (themeable). Defaults to the "ramen" warm broth. ---- */
+  --accent: #f97316;
+  --accent-strong: #ea580c;
+  --accent-soft: rgba(249, 115, 22, 0.15);
+  --accent-gradient: linear-gradient(135deg, #ffb84d 0%, #f97316 100%);
+  --glow-accent: rgba(249, 115, 22, 0.3);
+  --bg-glow: rgba(255, 149, 41, 0.07);
+
+  /* ---- Depth & surface ---- */
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.28);
+  --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.45), 0 14px 36px rgba(0, 0, 0, 0.42);
+  --surface-highlight: rgba(255, 255, 255, 0.06);
+  --card-grad-from: #201e1d;
+  --card-grad-to: #161514;
+  --radius-card: 16px;
+
+  /* ---- Display font ---- */
+  --font-display: 'Nunito Variable', 'Nunito', -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+    system-ui, sans-serif;
+}
+
+/* ===== Theme presets (set via data-theme on <html>) ===== */
+[data-theme='ramen'] {
+  --accent: #f97316;
+  --accent-strong: #ea580c;
+  --accent-soft: rgba(249, 115, 22, 0.15);
+  --accent-gradient: linear-gradient(135deg, #ffb84d 0%, #f97316 100%);
+  --glow-accent: rgba(249, 115, 22, 0.3);
+  --bg-glow: rgba(255, 149, 41, 0.07);
+  --accent-blue: #f97316;
+  --card-grad-from: #201e1d;
+  --card-grad-to: #161514;
+}
+[data-theme='midnight'] {
+  --accent: #818cf8;
+  --accent-strong: #6366f1;
+  --accent-soft: rgba(129, 140, 248, 0.16);
+  --accent-gradient: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+  --glow-accent: rgba(99, 102, 241, 0.32);
+  --bg-glow: rgba(99, 102, 241, 0.08);
+  --accent-blue: #818cf8;
+  --card-grad-from: #1c1c24;
+  --card-grad-to: #141419;
+}
+[data-theme='ocean'] {
+  --accent: #0a84ff;
+  --accent-strong: #0060df;
+  --accent-soft: rgba(10, 132, 255, 0.16);
+  --accent-gradient: linear-gradient(135deg, #64d2ff 0%, #0a84ff 100%);
+  --glow-accent: rgba(10, 132, 255, 0.3);
+  --bg-glow: rgba(10, 132, 255, 0.07);
+  --accent-blue: #0a84ff;
+  --card-grad-from: #15191f;
+  --card-grad-to: #111418;
+}
+[data-theme='matcha'] {
+  --accent: #34c759;
+  --accent-strong: #248a3d;
+  --accent-soft: rgba(52, 199, 89, 0.16);
+  --accent-gradient: linear-gradient(135deg, #7ee787 0%, #34c759 100%);
+  --glow-accent: rgba(52, 199, 89, 0.28);
+  --bg-glow: rgba(52, 199, 89, 0.06);
+  --accent-blue: #34c759;
+  --card-grad-from: #161d18;
+  --card-grad-to: #111613;
+}
+[data-theme='sakura'] {
+  --accent: #ff7eb3;
+  --accent-strong: #f0568f;
+  --accent-soft: rgba(255, 126, 179, 0.16);
+  --accent-gradient: linear-gradient(135deg, #ffb3d1 0%, #ff7eb3 100%);
+  --glow-accent: rgba(255, 126, 179, 0.3);
+  --bg-glow: rgba(255, 126, 179, 0.08);
+  --accent-blue: #ff7eb3;
+  --card-grad-from: #211a1e;
+  --card-grad-to: #181317;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', system-ui,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  /* Warm, steam-lit ambient glow at the top so cards lift off the page. */
+  background-image: radial-gradient(120% 60% at 50% -8%, var(--bg-glow) 0%, transparent 60%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  overflow: hidden;
+  user-select: none;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.markdown-content,
+.whitespace-pre-wrap,
+[class*='overflow-y-auto'] {
+  user-select: text;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-soft);
+}
+
+.card {
+  background-color: var(--bg-card);
+  /* Subtle top-lit gradient surface + glassy 1px lip + soft elevation so cards
+     read as physical objects rather than bordered rectangles. */
+  background-image: linear-gradient(180deg, var(--card-grad-from) 0%, var(--card-grad-to) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  box-shadow:
+    var(--elevation-1),
+    inset 0 1px 0 var(--surface-highlight);
+}
+
+.card--interactive {
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+  cursor: pointer;
+}
+.card--interactive:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    var(--elevation-2),
+    inset 0 1px 0 var(--surface-highlight);
+  border-color: var(--accent-soft);
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes noodle-slurp {
+  0%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dashoffset: -14;
+  }
+}
+
+@keyframes noodle-wiggle {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-1px) rotate(-3deg);
+  }
+  75% {
+    transform: translateY(1px) rotate(3deg);
+  }
+}
+
+@keyframes bowl-wobble {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes steam-rise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-14px) scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes chopstick-lift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(-4deg);
+  }
+}
+
+@keyframes noodle-twirl {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-2deg);
+  }
+  35% {
+    transform: translate(1px, -1px) rotate(2.5deg);
+  }
+  70% {
+    transform: translate(-1px, 1px) rotate(-1.5deg);
+  }
+}
+
+/* ===== Motion system ===== */
+@keyframes card-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered card entrance. Apply .rise-in to grid children; CSS variable
+   --rise-delay (set per-index inline) controls the stagger. */
+.rise-in {
+  animation: card-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+@keyframes accent-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes steam-drift {
+  0% {
+    transform: translateY(0) scaleX(1);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-22px) scaleX(1.5);
+    opacity: 0;
+  }
+}
+
+/* Calm motion mode: user opted out of playful motion — keep functional
+   transitions, drop the ambient/decorative loops. */
+[data-motion='calm'] .rise-in {
+  animation: none;
+}
+[data-motion='calm'] .ambient-steam,
+[data-motion='calm'] .playful-only {
+  display: none !important;
+}
+
+/* Respect the OS-level reduced-motion preference above everything. */
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation: none !important;
+  }
+  .ambient-steam,
+  .playful-only {
+    display: none !important;
+  }
+  * {
+    scroll-behavior: auto !important;
+  }
+}

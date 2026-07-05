@@ -1,0 +1,16 @@
+{
+  "description": "Sleep debt, HRV suppressed, market drawdown, packed calendar. Expect <45.",
+  "recovery": {
+    "score": 32,
+    "status": "rest",
+    "components": {
+      "sleepScore": 35,
+      "hrvScore": 30,
+      "exerciseLoad": 25
+    },
+    "recommendation": "Low recovery."
+  },
+  "marketStress": 25,
+  "calendarLoad": 20,
+  "expectedScoreBand": [0, 44]
+}

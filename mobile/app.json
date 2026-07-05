@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "Mien",
+    "slug": "mien",
+    "version": "1.10.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mien.app",
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.access": []
+      },
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "Mien reads your health data to provide sleep analysis, fitness insights, and energy-aware scheduling.",
+        "NSHealthUpdateUsageDescription": "Mien does not write health data.",
+        "NSLocationWhenInUseUsageDescription": "Mien shows your location on the map so you can see where you are relative to your planned activities and restaurants."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.mien.app",
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-secure-store",
+      [
+        "react-native-health",
+        {
+          "isClinicalDataEnabled": false
+        }
+      ],
+      "expo-font"
+    ]
+  }
+}

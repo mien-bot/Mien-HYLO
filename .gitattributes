@@ -1,0 +1,16 @@
+# Normalize all text files to LF in the repo (and in working trees).
+# This stops Windows autocrlf from showing phantom whole-file diffs.
+* text=auto eol=lf
+
+# Windows-native scripts must keep CRLF to run correctly.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+*.vbs   text eol=crlf
+*.nsh   text eol=crlf
+
+# Binary assets — never touch line endings.
+*.png   binary
+*.ico   binary
+*.db    binary
+*.pdf   binary

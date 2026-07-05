@@ -1,0 +1,20 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with rounded corners for iOS -->
+  <rect width="1024" height="1024" rx="224" fill="#0a0a0f"/>
+  <!-- Chopsticks -->
+  <line x1="440" y1="216" x2="640" y2="376" stroke="rgba(245,245,247,0.9)" stroke-width="24" stroke-linecap="round"/>
+  <line x1="500" y1="196" x2="680" y2="364" stroke="rgba(245,245,247,0.9)" stroke-width="24" stroke-linecap="round"/>
+  <!-- Noodles dangling from chopsticks -->
+  <path d="M540 340 C528 364, 544 388, 532 412" stroke="rgba(245,245,247,0.9)" stroke-width="20" stroke-linecap="round" fill="none"/>
+  <path d="M580 324 C568 348, 584 372, 572 396" stroke="rgba(245,245,247,0.9)" stroke-width="20" stroke-linecap="round" fill="none"/>
+  <path d="M620 312 C608 336, 624 360, 612 384" stroke="rgba(245,245,247,0.9)" stroke-width="20" stroke-linecap="round" fill="none"/>
+  <!-- Bowl rim -->
+  <ellipse cx="512" cy="476" rx="304" ry="60" stroke="rgba(245,245,247,0.9)" stroke-width="24" fill="#0a0a0f"/>
+  <!-- Bowl body -->
+  <path d="M208 476 C208 476, 240 780, 512 780 C784 780, 816 476, 816 476" stroke="rgba(245,245,247,0.9)" stroke-width="24" stroke-linecap="round" fill="none"/>
+  <!-- Bowl base -->
+  <rect x="432" y="776" width="160" height="48" rx="8" stroke="rgba(245,245,247,0.9)" stroke-width="20" fill="none"/>
+  <!-- Noodles inside bowl -->
+  <path d="M300 516 C340 580, 420 540, 480 580 C540 620, 600 560, 680 580" stroke="rgba(245,245,247,0.9)" stroke-width="20" stroke-linecap="round" fill="none"/>
+  <path d="M330 560 C380 620, 440 580, 500 616 C560 652, 620 600, 700 610" stroke="rgba(245,245,247,0.9)" stroke-width="20" stroke-linecap="round" fill="none"/>
+</svg>

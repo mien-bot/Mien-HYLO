@@ -1,0 +1,16 @@
+{
+  "description": "Average sleep, moderate HRV, heavier calendar. Expect 45-74.",
+  "recovery": {
+    "score": 58,
+    "status": "moderate",
+    "components": {
+      "sleepScore": 62,
+      "hrvScore": 56,
+      "exerciseLoad": 60
+    },
+    "recommendation": "Moderate recovery."
+  },
+  "marketStress": 55,
+  "calendarLoad": 50,
+  "expectedScoreBand": [45, 74]
+}

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.ianliu.mien",
+  "productName": "Mien",
+  "directories": {
+    "buildResources": "resources",
+    "output": "dist"
+  },
+  "files": [
+    {
+      "from": "out",
+      "to": "out",
+      "filter": [
+        "**/*",
+        "!**/*.tsbuildinfo"
+      ]
+    },
+    {
+      "from": ".",
+      "to": ".",
+      "filter": [
+        "package.json"
+      ]
+    },
+    "!node_modules/**/*",
+    "node_modules/better-sqlite3/**/*",
+    "node_modules/bindings/**/*",
+    "node_modules/file-uri-to-path/**/*",
+    "node_modules/node-addon-api/**/*"
+  ],
+  "win": {
+    "target": ["nsis"],
+    "artifactName": "${name}-${version}-setup.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    // Custom NSIS hooks that aggressively remove any prior Mien install
+    // before placing new files. See build/installer.nsh.
+    "include": "build/installer.nsh",
+    // Each installer ships the full app instead of a delta blockmap — keeps
+    // upgrades simple and avoids partial-update edge cases when the previous
+    // install came from a manual download rather than auto-update.
+    "differentialPackage": false,
+    // Keep user data (settings, SQLite db) across uninstall/reinstall.
+    "deleteAppDataOnUninstall": false,
+    "shortcutName": "Mien",
+    "uninstallDisplayName": "Mien"
+  },
+  "mac": {
+    // Universal-arch dmg works on Intel + Apple Silicon. Unsigned until a
+    // Developer ID cert is configured; users right-click → Open on first
+    // launch, or run `xattr -d com.apple.quarantine /Applications/Mien.app`.
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "category": "public.app-category.productivity",
+    "identity": null,
+    "artifactName": "${name}-${version}-${arch}.${ext}"
+  },
+  "linux": {
+    "target": ["AppImage"],
+    "category": "Utility",
+    "artifactName": "${name}-${version}.${ext}"
+  },
+  "extraMetadata": {
+    "main": "./out/main/index.js"
+  }
+}

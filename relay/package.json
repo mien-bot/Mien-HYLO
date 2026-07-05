@@ -1,0 +1,13 @@
+{
+  "name": "mien-relay",
+  "version": "3.1.1",
+  "description": "Relay server — proxies AI requests, syncs health data, auto-restarts on crash",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "tunnel": "TUNNEL=1 node server.js"
+  },
+  "dependencies": {}
+}

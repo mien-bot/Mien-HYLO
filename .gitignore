@@ -1,0 +1,37 @@
+node_modules/
+out/
+dist/
+.env
+# mobile/.env is intentionally committed — it holds the Expo dev-server
+# proxy URL config (tunnel hostname, not secrets). See file header.
+!mobile/.env
+*.db
+*.db-journal
+.claude/
+
+# Relay secrets and runtime files
+relay/relay.key
+relay/strava-config.json
+relay/strava-tokens.json
+relay/strava-activity-details.json
+relay/strava-streams.json
+relay/.env
+relay/tunnel-url.txt
+relay/health-data.json
+relay/health-data.json.*
+relay/sleep-analysis.json
+relay/sync-data.json
+relay/relay.log
+relay/relay.pid
+relay/relay-server.pid
+relay/relay-stdout.tmp
+relay/relay-stderr.tmp
+relay/_relay.*.log
+relay/phase*.log
+relay/AGENT-NOTES.md
+
+# Misc local artifacts
+expo-qr*.png
+expo-go-*.png
+expo-*.log
+docs/SLEEP-STAGES-DEEP-DIVE.md

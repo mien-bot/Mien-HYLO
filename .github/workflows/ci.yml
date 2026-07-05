@@ -1,0 +1,61 @@
+name: CI
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: sudo apt-get update && sudo apt-get install -y python3 make g++
+      - run: npm ci
+        env:
+          npm_config_build_from_source: true
+      - run: npx tsc --noEmit -p tsconfig.node.json
+      - run: npx tsc --noEmit -p tsconfig.web.json
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: sudo apt-get update && sudo apt-get install -y python3 make g++
+      - run: npm ci
+        env:
+          npm_config_build_from_source: true
+      - run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: sudo apt-get update && sudo apt-get install -y python3 make g++
+      - run: npm ci
+        env:
+          npm_config_build_from_source: true
+      - run: npm run test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [typecheck, lint, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: sudo apt-get update && sudo apt-get install -y python3 make g++
+      - run: npm ci
+        env:
+          npm_config_build_from_source: true
+      - run: npm run build

@@ -1,0 +1,20 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark background -->
+  <circle cx="256" cy="256" r="256" fill="#0e0f1a"/>
+  <!-- Chopsticks -->
+  <line x1="220" y1="108" x2="320" y2="188" stroke="rgba(245,245,247,0.9)" stroke-width="12" stroke-linecap="round"/>
+  <line x1="250" y1="98" x2="340" y2="182" stroke="rgba(245,245,247,0.9)" stroke-width="12" stroke-linecap="round"/>
+  <!-- Noodles dangling from chopsticks — wavy lines -->
+  <path d="M270 170 C264 182, 272 194, 266 206" stroke="rgba(245,245,247,0.9)" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <path d="M290 162 C284 174, 292 186, 286 198" stroke="rgba(245,245,247,0.9)" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <path d="M310 156 C304 168, 312 180, 306 192" stroke="rgba(245,245,247,0.9)" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <!-- Bowl rim — wide ellipse -->
+  <ellipse cx="256" cy="238" rx="152" ry="30" stroke="rgba(245,245,247,0.9)" stroke-width="12" fill="#0e0f1a"/>
+  <!-- Bowl body -->
+  <path d="M104 238 C104 238, 120 390, 256 390 C392 390, 408 238, 408 238" stroke="rgba(245,245,247,0.9)" stroke-width="12" stroke-linecap="round" fill="none"/>
+  <!-- Bowl base -->
+  <rect x="216" y="388" width="80" height="24" rx="4" stroke="rgba(245,245,247,0.9)" stroke-width="10" fill="none"/>
+  <!-- Noodles inside bowl — curved lines -->
+  <path d="M150 258 C170 290, 210 270, 240 290 C270 310, 300 280, 340 290" stroke="rgba(245,245,247,0.9)" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <path d="M165 280 C190 310, 220 290, 250 308 C280 326, 310 300, 350 305" stroke="rgba(245,245,247,0.9)" stroke-width="10" stroke-linecap="round" fill="none"/>
+</svg>

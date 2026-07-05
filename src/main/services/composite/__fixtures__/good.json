@@ -1,0 +1,16 @@
+{
+  "description": "Well-rested, fit, calm markets, light schedule. Expect score >= 75.",
+  "recovery": {
+    "score": 82,
+    "status": "ready",
+    "components": {
+      "sleepScore": 88,
+      "hrvScore": 84,
+      "exerciseLoad": 80
+    },
+    "recommendation": "Body is well-recovered."
+  },
+  "marketStress": 90,
+  "calendarLoad": 85,
+  "expectedScoreBand": [75, 100]
+}
