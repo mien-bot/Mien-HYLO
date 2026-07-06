@@ -513,7 +513,7 @@ export function getActivityStreams(activityId: number): Partial<StravaStream> | 
   `)
   const row = db
     .prepare('SELECT streams_json FROM strava_streams WHERE activity_id = ?')
-    .get(activityId) as Record<string, unknown>
+    .get(activityId) as { streams_json: string } | undefined
   if (!row) return null
   return JSON.parse(row.streams_json)
 }

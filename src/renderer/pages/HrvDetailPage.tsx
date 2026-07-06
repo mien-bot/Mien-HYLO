@@ -7,11 +7,11 @@ import {
   Line,
   XAxis,
   YAxis,
-  Tooltip,
   ResponsiveContainer,
   ReferenceLine,
   CartesianGrid,
 } from 'recharts'
+import Tooltip from '../components/charts/ChartTooltip'
 import { format, parseISO, subDays, eachDayOfInterval } from 'date-fns'
 import { useHealthMetrics, parseMetricValue } from '../hooks/useHealthData'
 import NoodleSpinner from '../components/anim/NoodleSpinner'

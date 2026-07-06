@@ -15,10 +15,10 @@ import {
   Line,
   XAxis,
   YAxis,
-  Tooltip,
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts'
+import Tooltip from '../components/charts/ChartTooltip'
 import { format, parseISO } from 'date-fns'
 
 interface HoldingRow {

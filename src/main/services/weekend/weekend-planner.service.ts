@@ -630,8 +630,9 @@ Generate the itinerary as a complete JSON object with key "${day}" and "agendaMa
   mergedPlan[day] = dayPlan[day] || []
   // Merge agendaMap
   if (!mergedPlan.agendaMap) mergedPlan.agendaMap = {}
-  if (dayPlan.agendaMap?.[day]) {
-    mergedPlan.agendaMap[day] = dayPlan.agendaMap[day]
+  const dayPlanAgendaMap = dayPlan.agendaMap as Record<string, unknown> | undefined
+  if (dayPlanAgendaMap?.[day]) {
+    mergedPlan.agendaMap[day] = dayPlanAgendaMap[day]
   }
 
   const mergedJson = JSON.stringify(mergedPlan)

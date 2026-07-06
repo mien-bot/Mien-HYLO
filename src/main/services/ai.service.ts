@@ -11,6 +11,7 @@
  */
 import { BrowserWindow } from 'electron'
 import Anthropic from '../lib/anthropic'
+import type { Anthropic as AnthropicTypes } from '@anthropic-ai/sdk'
 import { getDb } from '../db/database'
 import { getAppSettings } from '../lib/settings'
 import { AGENT_TOOLS, TOOL_LABELS, executeAgentTool } from './ai-tools'
@@ -22,7 +23,7 @@ const HAIKU_MODEL = 'claude-haiku-4-5'
 function getModel(): string {
   const settings = getAppSettings()
   const opus = settings?.opusMode
-  const enabled = opus === true || opus === 'true'
+  const enabled = opus === 'true'
   return enabled ? OPUS_MODEL : DEFAULT_MODEL
 }
 
@@ -320,7 +321,7 @@ function buildAnalysisParams(
   // API silently won't cache if the rendered prefix (tools + system) is below
   // the model's minimum (2048 tokens on Sonnet 4.6 / 4096 on Opus & Haiku) —
   // we still set the marker because it's free for misses.
-  const systemBlocks = cacheSystem
+  const systemBlocks: string | AnthropicTypes.TextBlockParam[] = cacheSystem
     ? [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }]
     : systemPrompt
 
@@ -360,7 +361,7 @@ export async function generateAnalysis(
   let cacheCreate: number | null = null
   try {
     for (let turn = 0; turn <= MAX_ANALYSIS_PAUSE_TURNS; turn++) {
-      const response = await client.messages.create(params)
+      const response = (await client.messages.create(params)) as AnthropicTypes.Message
       const usage = readUsage(response.usage)
       if (usage.tokens_in != null) tokensIn = (tokensIn ?? 0) + usage.tokens_in
       if (usage.tokens_out != null) tokensOut = (tokensOut ?? 0) + usage.tokens_out
@@ -448,7 +449,13 @@ export async function generateAnalysisStreaming(
       if (u.cache_create != null) cacheCreate = (cacheCreate ?? 0) + u.cache_create
 
       if (response.stop_reason === 'pause_turn') {
-        params.messages = [...params.messages, { role: 'assistant', content: response.content }]
+        params.messages = [
+          ...params.messages,
+          {
+            role: 'assistant',
+            content: response.content,
+          } as unknown as AnthropicTypes.MessageParam,
+        ]
         continue
       }
       break

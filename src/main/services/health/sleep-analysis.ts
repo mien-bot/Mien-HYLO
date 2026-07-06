@@ -488,11 +488,11 @@ export function analyzeSleepNeed(days: number = 90): SleepNeedProfile | null {
   }
 
   const chronoInsight =
-    chronotype.type === 'evening'
-      ? `Your ${chronotype.type} chronotype means your circadian rhythm runs later. Evening types often accumulate social jet lag during the work week. Matching your sleep schedule to your chronotype when possible can improve sleep quality (Wittmann et al., 2006).`
-      : chronotype.type === 'morning'
-        ? `Your ${chronotype.type} chronotype means your circadian clock runs earlier. Morning types tend to have easier weekday schedules but may miss out on evening social time. Your sleep quality likely peaks with early bedtimes.`
-        : `Your ${chronotype.type} chronotype falls in the middle range, which offers the most schedule flexibility.`
+    chronotype.chronotype === 'wolf'
+      ? `Your ${chronotype.label} chronotype means your circadian rhythm runs later. Evening types often accumulate social jet lag during the work week. Matching your sleep schedule to your chronotype when possible can improve sleep quality (Wittmann et al., 2006).`
+      : chronotype.chronotype === 'lion'
+        ? `Your ${chronotype.label} chronotype means your circadian clock runs earlier. Morning types tend to have easier weekday schedules but may miss out on evening social time. Your sleep quality likely peaks with early bedtimes.`
+        : `Your ${chronotype.label} chronotype falls in the middle range, which offers the most schedule flexibility.`
   insights.push(chronoInsight)
 
   // Age-adjusted population norms (Ohayon et al., 2004 meta-analysis + Lunsford-Avery et al., 2018 for SRI)
@@ -665,7 +665,7 @@ export function analyzeSleepNeed(days: number = 90): SleepNeedProfile | null {
   return {
     estimatedNeed: need,
     confidence,
-    chronotype: chronotype.type,
+    chronotype: chronotype.chronotype,
     dataPoints: sessions.length,
     bestNights,
     worstNights,
@@ -1747,7 +1747,7 @@ export function calculateWorkoutSleepCorrelation(): WorkoutSleepCorrelation | nu
 
   // Simple correlation coefficient
   const allScores = nightScores.map((n) => n.score)
-  const allWorkout = nightScores.map((n) => (n.hadWorkout ? 1 : 0))
+  const allWorkout: number[] = nightScores.map((n) => (n.hadWorkout ? 1 : 0))
   const meanScore = allScores.reduce((a, b) => a + b, 0) / allScores.length
   const meanWorkout = allWorkout.reduce((a, b) => a + b, 0) / allWorkout.length
 

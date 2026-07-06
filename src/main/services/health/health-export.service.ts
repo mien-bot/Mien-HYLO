@@ -2,6 +2,7 @@ import { getDb } from '../../db/database'
 import fs from 'fs'
 import path from 'path'
 import http from 'http'
+import { timingSafeEqual } from 'crypto'
 import { BrowserWindow, Notification } from 'electron'
 import store from '../../lib/store'
 import {
@@ -20,11 +21,12 @@ import { generateBriefing } from '../../ai/briefing-generator'
 import { wakeDateFor } from '@shared/sleep-date'
 import { HEALTH_SERVER_PORT, SLEEP_DEBT_WINDOW_DAYS } from '@shared/constants'
 import { checkHealthAlerts } from './health-alerts.service'
-import { mergeWorkouts, isStravaWorkout } from './workout-merge'
+import { mergeWorkouts, isStravaWorkout, type WorkoutEntry } from './workout-merge'
 import { getAppSettings } from '../../lib/settings'
 let watcher: fs.FSWatcher | null = null
 let server: http.Server | null = null
 let boundPort: number | null = null
+const MAX_HEALTH_REQUEST_BYTES = 25 * 1024 * 1024
 
 export function getHealthServerPort(): number | null {
   return boundPort
@@ -50,6 +52,7 @@ interface HealthAutoExportPayload {
         sleepEnd?: string
       }>
     }>
+    workouts?: WorkoutEntry[]
   }
   // Alternative flat format some versions use
   metrics?: Array<{
@@ -57,6 +60,7 @@ interface HealthAutoExportPayload {
     units: string
     data: Array<Record<string, unknown>>
   }>
+  workouts?: WorkoutEntry[]
 }
 
 const METRIC_NAME_MAP: Record<string, string> = {
@@ -135,10 +139,7 @@ function parseAndStorePayload(payload: HealthAutoExportPayload): number {
   let stored = 0
 
   // Handle workouts (separate from metrics in Health Auto Export)
-  const workouts =
-    (payload as Record<string, unknown>).data?.workouts ||
-    (payload as Record<string, unknown>).workouts ||
-    []
+  const workouts: WorkoutEntry[] = payload.data?.workouts || payload.workouts || []
   if (workouts.length > 0) {
     console.log(`Processing ${workouts.length} workouts`)
     // Group workouts by date, store as array per day (UNIQUE(metric_type, date) constraint)
@@ -223,7 +224,10 @@ function parseAndStorePayload(payload: HealthAutoExportPayload): number {
     if (!grouped[metricType]) grouped[metricType] = {}
 
     for (const entry of metric.data) {
-      const initialDate = extractDate(entry.date || (entry as Record<string, unknown>).dateString)
+      const entryRecord = entry as Record<string, unknown>
+      const initialDate = extractDate(
+        (entryRecord.date as string | undefined) || (entryRecord.dateString as string | undefined),
+      )
       if (!initialDate) continue
 
       // Sleep is binned by the local **wake date** (date of sleepEnd).
@@ -857,7 +861,9 @@ export function stopFileWatcher(): void {
 
 export function startHealthServer(): void {
   const settings = getAppSettings()
-  const port = parseInt(settings?.healthServerPort) || HEALTH_SERVER_PORT
+  const port = parseInt(settings?.healthServerPort ?? '', 10) || HEALTH_SERVER_PORT
+  const authToken = settings?.relayToken?.trim() || ''
+  const bindHost = authToken ? '0.0.0.0' : '127.0.0.1'
 
   stopHealthServer()
 
@@ -873,6 +879,26 @@ export function startHealthServer(): void {
       return
     }
 
+    if (authToken) {
+      const supplied = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1] || ''
+      const suppliedBytes = Buffer.from(supplied)
+      const expectedBytes = Buffer.from(authToken)
+      const valid =
+        suppliedBytes.length === expectedBytes.length &&
+        timingSafeEqual(suppliedBytes, expectedBytes)
+      if (!valid) {
+        res.writeHead(401, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ error: 'Unauthorized' }))
+        return
+      }
+    } else if (req.headers.origin) {
+      // Without a configured token the service is loopback-only. Also reject
+      // browser-originated requests to prevent drive-by localhost mutations.
+      res.writeHead(403, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ error: 'Browser requests are not allowed' }))
+      return
+    }
+
     const url = new URL(req.url || '/', `http://localhost:${port}`)
     const pathname = url.pathname
 
@@ -881,10 +907,21 @@ export function startHealthServer(): void {
       (pathname === '/' || pathname === '/health/import' || pathname === '/health/auto-export')
     ) {
       let body = ''
+      let bodyBytes = 0
+      let bodyTooLarge = false
       req.on('data', (chunk) => {
+        if (bodyTooLarge) return
+        bodyBytes += chunk.length
+        if (bodyBytes > MAX_HEALTH_REQUEST_BYTES) {
+          bodyTooLarge = true
+          res.writeHead(413, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ status: 'error', message: 'Request body too large' }))
+          return
+        }
         body += chunk
       })
       req.on('end', () => {
+        if (bodyTooLarge) return
         try {
           const payload = JSON.parse(body)
           const count = parseAndStorePayload(payload)
@@ -903,10 +940,21 @@ export function startHealthServer(): void {
     } else if (req.method === 'POST' && pathname === '/health/sync') {
       // Receive health data from mobile/relay and store it
       let body = ''
+      let bodyBytes = 0
+      let bodyTooLarge = false
       req.on('data', (chunk) => {
+        if (bodyTooLarge) return
+        bodyBytes += chunk.length
+        if (bodyBytes > MAX_HEALTH_REQUEST_BYTES) {
+          bodyTooLarge = true
+          res.writeHead(413, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ status: 'error', message: 'Request body too large' }))
+          return
+        }
         body += chunk
       })
       req.on('end', () => {
+        if (bodyTooLarge) return
         try {
           const payload = JSON.parse(body)
           const metrics = payload.metrics || []
@@ -954,7 +1002,7 @@ export function startHealthServer(): void {
 
               const merged = mergeWorkouts(
                 existingWorkouts,
-                (valueParsed as Record<string, unknown>).workouts,
+                (valueParsed as Record<string, unknown>).workouts as WorkoutEntry[],
               )
               const hasStrava = merged.some(isStravaWorkout)
               const hasNonStrava = merged.some((w) => !isStravaWorkout(w))
@@ -984,7 +1032,10 @@ export function startHealthServer(): void {
       res.end(JSON.stringify({ status: 'ok', service: 'mien-health-receiver' }))
     } else if (req.method === 'GET' && pathname === '/health/data') {
       // Serve health data to mobile app
-      const days = parseInt(url.searchParams.get('days') || '14')
+      const requestedDays = parseInt(url.searchParams.get('days') || '14', 10)
+      const days = Number.isFinite(requestedDays)
+        ? Math.min(Math.max(requestedDays, 1), 3650)
+        : 14
       const db = getDb()
       const rows = db
         .prepare(
@@ -1051,7 +1102,7 @@ export function startHealthServer(): void {
     } else if (req.method === 'POST' && pathname === '/health/cleanup') {
       const db = getDb()
       const before = (
-        db.prepare('SELECT COUNT(*) as cnt FROM health_metrics').get() as Record<string, unknown>
+        db.prepare('SELECT COUNT(*) as cnt FROM health_metrics').get() as { cnt: number }
       ).cnt
       const details: Record<string, number> = {}
 
@@ -1150,7 +1201,7 @@ export function startHealthServer(): void {
       )
 
       const after = (
-        db.prepare('SELECT COUNT(*) as cnt FROM health_metrics').get() as Record<string, unknown>
+        db.prepare('SELECT COUNT(*) as cnt FROM health_metrics').get() as { cnt: number }
       ).cnt
       const removed = before - after
       console.log(`Cleanup: removed ${removed} bad entries`, details)
@@ -1205,9 +1256,11 @@ export function startHealthServer(): void {
         boundPort = null
       }
     })
-    server!.listen(currentPort, '0.0.0.0', () => {
+    server!.listen(currentPort, bindHost, () => {
       boundPort = currentPort
-      console.log(`Health data server listening on port ${currentPort}`)
+      console.log(
+        `Health data server listening on ${bindHost}:${currentPort}${authToken ? ' (bearer auth required)' : ' (loopback only; configure a relay token for LAN access)'}`,
+      )
     })
   }
 
@@ -1397,7 +1450,7 @@ export function recalculateSleepInBed(): { updated: number; total: number; detai
     .prepare(
       `SELECT id, date, value_json FROM health_metrics WHERE metric_type = 'sleep' ORDER BY date`,
     )
-    .all() as Array<Record<string, unknown>>
+    .all() as Array<{ id: number; date: string; value_json: string }>
   const details: string[] = []
   let updated = 0
 
@@ -1449,7 +1502,7 @@ export function backfillSleepAwake(): { updated: number; total: number } {
   const db = getDb()
   const rows = db
     .prepare(`SELECT id, date, value_json FROM health_metrics WHERE metric_type = 'sleep'`)
-    .all() as Array<Record<string, unknown>>
+    .all() as Array<{ id: number; date: string; value_json: string }>
   let updated = 0
 
   const update = db.prepare(`UPDATE health_metrics SET value_json = ? WHERE id = ?`)

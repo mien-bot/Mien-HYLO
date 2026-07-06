@@ -32,7 +32,6 @@ import {
   ComposedChart,
   XAxis,
   YAxis,
-  Tooltip,
   ResponsiveContainer,
   ReferenceLine,
   CartesianGrid,
@@ -47,6 +46,7 @@ import {
   Cell,
   Brush,
 } from 'recharts'
+import Tooltip from '../../components/charts/ChartTooltip'
 import { format, parseISO, getYear } from 'date-fns'
 import { useHealthMetrics, parseMetricValue } from '../../hooks/useHealthData'
 import NoodleSpinner from '../../components/anim/NoodleSpinner'
@@ -692,7 +692,19 @@ export default function ExerciseDetailPage() {
     }> = []
     for (const m of workoutMetrics) {
       const val = parseMetricValue(m)
-      const dayWorkouts = (val.workouts as Array<Record<string, unknown>>) || []
+      const dayWorkouts = (val.workouts as Array<{
+        stravaId?: string | number
+        name?: string
+        duration?: number
+        calories?: number
+        distance?: number
+        avgHR?: number
+        maxHR?: number
+        start?: string
+        source?: string
+        elevationGain?: number
+        sufferScore?: number
+      }>) || []
       dayWorkouts.forEach((w, idx) => {
         const stravaId = (w as any).stravaId
         const key = stravaId ? `strava-${stravaId}` : `hae-${m.date}-${idx}`

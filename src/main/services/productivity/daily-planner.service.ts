@@ -420,7 +420,7 @@ async function buildPlannerContext(): Promise<string> {
     ORDER BY date DESC LIMIT 1
   `,
     )
-    .get() as Record<string, unknown>
+    .get() as { date: string; value_json: string } | undefined
 
   if (lastHrv) {
     try {
@@ -442,7 +442,7 @@ async function buildPlannerContext(): Promise<string> {
     ORDER BY date DESC LIMIT 1
   `,
     )
-    .get() as Record<string, unknown>
+    .get() as { date: string; value_json: string } | undefined
 
   if (lastHr) {
     try {
@@ -480,7 +480,7 @@ async function buildPlannerContext(): Promise<string> {
     ORDER BY created_at DESC LIMIT 1
   `,
     )
-    .get() as Record<string, unknown>
+    .get() as { content: string } | undefined
 
   if (lastBriefing) {
     // Include first 500 chars of the briefing as context

@@ -15,6 +15,9 @@ Health Auto Export is an iOS app that exports Apple Health data via HTTP POST to
 - **URL**: `http://<desktop-ip>:19876/health/import` (local) or Cloudflare tunnel URL + `/health/auto-export`
 - **Method**: POST
 - **Content-Type**: application/json
+- **Header**: `Authorization: Bearer <your-relay-token>` for LAN or relay access. The
+  desktop must have the same relay token saved in Settings; without one, its health
+  receiver listens on localhost only and is intentionally unreachable from a phone.
 - **Sync Cadence**: Quantity 1, Interval Days
 - **Summarize Data**: ON, Time Grouping: **Day** (CRITICAL — see below)
 

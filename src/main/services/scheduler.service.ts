@@ -106,7 +106,15 @@ export function getSchedulerActivity(limit = 50): Array<{
        ORDER BY started_at DESC
        LIMIT ?`,
       )
-      .all(limit) as Record<string, unknown>
+      .all(limit) as Array<{
+      id: number
+      job_name: string
+      started_at: string
+      finished_at: string | null
+      status: string | null
+      error_text: string | null
+      duration_ms: number | null
+    }>
   } catch (err) {
     console.error('[Scheduler] getSchedulerActivity failed:', err)
     return []

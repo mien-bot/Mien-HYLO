@@ -168,6 +168,68 @@ function checkSecretTracking() {
   } else {
     fail(`secret/runtime files are tracked: ${tracked.join(', ')}`);
   }
+
+  const trackedFilesResult = run('git', ['ls-files', '-z'], { capture: true, optional: true });
+  if (!trackedFilesResult) {
+    warn('Could not scan tracked files for credential patterns');
+    return;
+  }
+
+  const trackedFiles = trackedFilesResult.stdout.split('\0').filter(Boolean);
+  const suspiciousPaths = trackedFiles.filter((file) => {
+    if (file === '.env.example' || file === 'mobile/.env') return false;
+    return /(^|\/)(\.env($|\.)|[^/]+\.(?:db|sqlite3?|pem|p12|pfx|key))$/i.test(file);
+  });
+  if (suspiciousPaths.length > 0) {
+    fail(`potential secret/runtime files are tracked: ${suspiciousPaths.join(', ')}`);
+  } else {
+    pass('no unexpected credential or database files are tracked');
+  }
+
+  const credentialPatterns = [
+    /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
+    /\bsk-ant-(?!your-|example|placeholder)[A-Za-z0-9_-]{16,}\b/i,
+    /\bghp_[A-Za-z0-9]{20,}\b/,
+    /\bntn_[A-Za-z0-9_-]{16,}\b/,
+    /\bAKIA[0-9A-Z]{16}\b/,
+    /\bAIza[0-9A-Za-z_-]{30,}\b/,
+    /C:\\Users\\(?!<you>|you\\|Public\\)[^\\\r\n]+/i,
+    /\/Users\/(?!<you>|you\/)[^/\s]+/i,
+    /\b[A-Z0-9._%+-]+@(?:gmail|icloud|outlook|protonmail)\.com\b/i,
+    /https:\/\/(?![a-z0-9-]*(?:example|xxx|random|abc-xyz|shy-cloud))[a-z0-9-]+\.trycloudflare\.com\b/i,
+  ];
+  const matchedFiles = [];
+  for (const file of trackedFiles) {
+    try {
+      const content = readFileSync(join(root, file), 'utf8');
+      if (credentialPatterns.some((pattern) => pattern.test(content))) matchedFiles.push(file);
+    } catch {
+      // Binary and platform-specific files are covered by the path denylist.
+    }
+  }
+  if (matchedFiles.length > 0) {
+    fail(`tracked files contain credential or private-environment values: ${matchedFiles.join(', ')}`);
+  } else {
+    pass('tracked text files contain no high-confidence credential or private-environment patterns');
+  }
+}
+
+function checkVersionConsistency() {
+  const pkg = readJson('package.json');
+  const lock = readJson('package-lock.json');
+  let versionFile = null;
+  try {
+    versionFile = readFileSync(join(root, 'VERSION'), 'utf8').trim();
+  } catch (error) {
+    fail(`VERSION is not readable: ${error.message}`);
+  }
+
+  const versions = [pkg?.version, lock?.version, lock?.packages?.['']?.version, versionFile];
+  if (versions.every((version) => version && version === versions[0])) {
+    pass(`desktop version metadata is consistent (${versions[0]})`);
+  } else {
+    fail(`desktop version metadata differs: ${versions.map((value) => value || '<missing>').join(', ')}`);
+  }
 }
 
 function checkWorktree() {
@@ -204,6 +266,7 @@ console.log(quick ? 'Mode: quick' : 'Mode: full');
 checkPackageScripts();
 checkRequiredFiles();
 checkSecretTracking();
+checkVersionConsistency();
 checkWorktree();
 runBuildGate();
 

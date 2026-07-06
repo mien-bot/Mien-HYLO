@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from 'recharts'
+import Tooltip from '../charts/ChartTooltip'
 import { usePriceHistory } from '../../hooks/useFinanceData'
 import { format, parseISO } from 'date-fns'
 

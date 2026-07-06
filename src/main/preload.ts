@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, webFrame } from 'electron'
+import { contextBridge, ipcRenderer, webFrame, webUtils } from 'electron'
 import type { ChatAttachmentInput, ChatToolStatus } from '../shared/types/ipc.types'
 
 const api = {
@@ -6,6 +6,7 @@ const api = {
   getZoomFactor: () => webFrame.getZoomFactor(),
   capturePage: (rect?: { x: number; y: number; width: number; height: number }) =>
     ipcRenderer.invoke('app:capturePage', rect),
+  getPathForFile: (file: File) => webUtils.getPathForFile(file),
 
   // Settings
   getSettings: (key: string) => ipcRenderer.invoke('settings:get', key),
@@ -90,7 +91,9 @@ const api = {
   ) => {
     const listener = (_event: Electron.IpcRendererEvent, hits: any) => callback(hits)
     ipcRenderer.on('alerts:fired', listener)
-    return () => ipcRenderer.removeListener('alerts:fired', listener)
+    return () => {
+      ipcRenderer.removeListener('alerts:fired', listener)
+    }
   },
 
   // Health
@@ -168,12 +171,16 @@ const api = {
   onSleepDataArrived: (callback: (data: any) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, data: any) => callback(data)
     ipcRenderer.on('health:sleep-data-arrived', listener)
-    return () => ipcRenderer.removeListener('health:sleep-data-arrived', listener)
+    return () => {
+      ipcRenderer.removeListener('health:sleep-data-arrived', listener)
+    }
   },
   onWindDown: (callback: (data: any) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, data: any) => callback(data)
     ipcRenderer.on('health:wind-down', listener)
-    return () => ipcRenderer.removeListener('health:wind-down', listener)
+    return () => {
+      ipcRenderer.removeListener('health:wind-down', listener)
+    }
   },
 
   // AI
@@ -254,12 +261,16 @@ const api = {
   onChatStream: (callback: (chunk: string) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, chunk: string) => callback(chunk)
     ipcRenderer.on('ai:stream-chunk', listener)
-    return () => ipcRenderer.removeListener('ai:stream-chunk', listener)
+    return () => {
+      ipcRenderer.removeListener('ai:stream-chunk', listener)
+    }
   },
   onChatStreamEnd: (callback: () => void) => {
     const listener = () => callback()
     ipcRenderer.on('ai:stream-end', listener)
-    return () => ipcRenderer.removeListener('ai:stream-end', listener)
+    return () => {
+      ipcRenderer.removeListener('ai:stream-end', listener)
+    }
   },
   // Tool-activity status while the agent is running tools mid-turn.
   onChatTool: (callback: (status: ChatToolStatus) => void) => {
@@ -268,20 +279,26 @@ const api = {
       status: ChatToolStatus,
     ) => callback(status)
     ipcRenderer.on('ai:chat-tool', listener)
-    return () => ipcRenderer.removeListener('ai:chat-tool', listener)
+    return () => {
+      ipcRenderer.removeListener('ai:chat-tool', listener)
+    }
   },
   // Analysis streaming (skills, planners) — separate channel from chat so a
   // skill running in the background doesn't bleed chunks into the chat UI.
   onAnalysisStream: (callback: (chunk: string) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, chunk: string) => callback(chunk)
     ipcRenderer.on('ai:analysis-stream-chunk', listener)
-    return () => ipcRenderer.removeListener('ai:analysis-stream-chunk', listener)
+    return () => {
+      ipcRenderer.removeListener('ai:analysis-stream-chunk', listener)
+    }
   },
   onAnalysisStreamEnd: (callback: (payload?: { error?: string }) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, payload?: { error?: string }) =>
       callback(payload)
     ipcRenderer.on('ai:analysis-stream-end', listener)
-    return () => ipcRenderer.removeListener('ai:analysis-stream-end', listener)
+    return () => {
+      ipcRenderer.removeListener('ai:analysis-stream-end', listener)
+    }
   },
 
   // Notion
@@ -328,7 +345,9 @@ const api = {
   ) => {
     const listener = (_event: Electron.IpcRendererEvent, data: any) => callback(data)
     ipcRenderer.on('relay:tunnel-url', listener)
-    return () => ipcRenderer.removeListener('relay:tunnel-url', listener)
+    return () => {
+      ipcRenderer.removeListener('relay:tunnel-url', listener)
+    }
   },
 
   // Weekend Planner
@@ -389,7 +408,9 @@ const api = {
   onRestaurantResearchProgress: (callback: (progress: any) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, progress: any) => callback(progress)
     ipcRenderer.on('restaurants:research-progress', listener)
-    return () => ipcRenderer.removeListener('restaurants:research-progress', listener)
+    return () => {
+      ipcRenderer.removeListener('restaurants:research-progress', listener)
+    }
   },
   discoverRestaurants: (query: string, mode?: 'food' | 'places') =>
     ipcRenderer.invoke('restaurants:discover', query, mode),
@@ -412,12 +433,16 @@ const api = {
   onBriefingNew: (callback: (data: any) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, data: any) => callback(data)
     ipcRenderer.on('briefing:new', listener)
-    return () => ipcRenderer.removeListener('briefing:new', listener)
+    return () => {
+      ipcRenderer.removeListener('briefing:new', listener)
+    }
   },
   onFinanceUpdated: (callback: () => void) => {
     const listener = () => callback()
     ipcRenderer.on('finance:updated', listener)
-    return () => ipcRenderer.removeListener('finance:updated', listener)
+    return () => {
+      ipcRenderer.removeListener('finance:updated', listener)
+    }
   },
 
   // --- Visualization aggregations ---

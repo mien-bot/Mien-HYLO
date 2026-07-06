@@ -678,10 +678,9 @@ export function predictOptimalWakeTime(input?: WakePredictionInput): WakePredict
     const db = getDb()
     const hrvN =
       (
-        db.prepare(`SELECT COUNT(*) c FROM health_metrics WHERE metric_type='hrv'`).get() as Record<
-          string,
-          unknown
-        >
+        db.prepare(`SELECT COUNT(*) c FROM health_metrics WHERE metric_type='hrv'`).get() as
+          | { c: number }
+          | undefined
       )?.c ?? 0
     const tmpN =
       (
@@ -689,7 +688,7 @@ export function predictOptimalWakeTime(input?: WakePredictionInput): WakePredict
           .prepare(
             `SELECT COUNT(*) c FROM health_metrics WHERE metric_type IN ('skin_temperature','body_temperature')`,
           )
-          .get() as Record<string, unknown>
+          .get() as { c: number } | undefined
       )?.c ?? 0
     if (hasStages && hrvN > 7 && tmpN > 7) dataQuality = 'full_biomarker'
     else if (hasStages && hrvN > 7) dataQuality = 'wearable_actigraphy'

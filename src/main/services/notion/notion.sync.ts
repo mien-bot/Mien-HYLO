@@ -196,10 +196,9 @@ export async function pushBriefingToNotion(briefingId: number): Promise<string> 
   }
 
   const db = getDb()
-  const briefing = db.prepare('SELECT * FROM briefings WHERE id = ?').get(briefingId) as Record<
-    string,
-    unknown
-  >
+  const briefing = db.prepare('SELECT * FROM briefings WHERE id = ?').get(briefingId) as
+    | { id: number; type: string; date: string; content: string }
+    | undefined
   if (!briefing) {
     throw new Error(`Briefing ${briefingId} not found`)
   }
@@ -347,8 +346,8 @@ export async function pullBriefingsFromNotion(
   let updated = 0
   let pulled = 0
 
-  for (const page of response.results as Array<Record<string, unknown>>) {
-    const props = page.properties || {}
+  for (const page of response.results as Array<Record<string, any>>) {
+    const props: Record<string, any> = page.properties || {}
 
     // Title (any title-typed property)
     const titleKey = Object.keys(props).find((k) => props[k]?.type === 'title')

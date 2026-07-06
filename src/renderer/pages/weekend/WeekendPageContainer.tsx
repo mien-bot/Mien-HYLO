@@ -2921,7 +2921,12 @@ function PlacesMap({
             )}
 
             {/* Saved places */}
-            {filtered.map((p) => {
+            {filtered.map((rawPlace) => {
+              const p = {
+                ...rawPlace,
+                description: rawPlace.description ?? '',
+                priceLevel: rawPlace.priceLevel ?? 0,
+              }
               const isFood = FOOD_VENUE_TYPES.includes(p.venueType)
               const selected = selectedPlace?.placeId === p.placeId
               return (
@@ -4130,7 +4135,7 @@ export default function WeekendPage() {
       const allKeys = new Set<string>()
       for (const day of DAY_ORDER) {
         const short = DAY_SHORT[day]
-        const activities: any[] = (plan as Record<string, unknown>)[day] || []
+        const activities = getPlanActivities(plan, day)
         activities.forEach((_: any, i: number) => allKeys.add(`${short}-${i}`))
       }
       setCheckedActivities(allKeys)
@@ -4404,7 +4409,7 @@ export default function WeekendPage() {
 
   const toggleDay = (dayKey: string) => {
     const short = DAY_SHORT[dayKey] || dayKey.slice(0, 3)
-    const activities: any[] = plan ? (plan as Record<string, unknown>)[dayKey] || [] : []
+    const activities = getPlanActivities(plan, dayKey)
     if (!activities.length) return
     const keys = activities.map((_: any, i: number) => `${short}-${i}`)
     setCheckedActivities((prev) => {
@@ -4421,14 +4426,14 @@ export default function WeekendPage() {
 
   const isDayChecked = (dayKey: string) => {
     const short = DAY_SHORT[dayKey] || dayKey.slice(0, 3)
-    const activities: any[] = plan ? (plan as Record<string, unknown>)[dayKey] || [] : []
+    const activities = getPlanActivities(plan, dayKey)
     if (!activities.length) return false
     return activities.every((_: any, i: number) => checkedActivities.has(`${short}-${i}`))
   }
 
   const isDayPartial = (dayKey: string) => {
     const short = DAY_SHORT[dayKey] || dayKey.slice(0, 3)
-    const activities: any[] = plan ? (plan as Record<string, unknown>)[dayKey] || [] : []
+    const activities = getPlanActivities(plan, dayKey)
     if (!activities.length) return false
     const count = activities.filter((_: any, i: number) =>
       checkedActivities.has(`${short}-${i}`),
@@ -4450,7 +4455,7 @@ export default function WeekendPage() {
     const allKeys = new Set<string>()
     for (const day of DAY_ORDER) {
       const short = DAY_SHORT[day]
-      const activities: any[] = (plan as Record<string, unknown>)[day] || []
+      const activities = getPlanActivities(plan, day)
       activities.forEach((_: any, i: number) => allKeys.add(`${short}-${i}`))
     }
     if (checkedActivities.size === allKeys.size) {
@@ -4474,7 +4479,7 @@ export default function WeekendPage() {
 
   const updateActivityTime = (day: string, index: number, newTime: string) => {
     if (!plan) return
-    const activities = [...((plan as Record<string, unknown>)[day] || [])]
+    const activities = [...getPlanActivities(plan, day)]
     activities[index] = { ...activities[index], time: newTime }
     const updated = { ...plan, [day]: activities }
     const nextPlan = withRefreshedAgendaMap(updated)
@@ -4484,7 +4489,7 @@ export default function WeekendPage() {
 
   const removeActivity = (day: string, index: number) => {
     if (!plan) return
-    const activities = ((plan as Record<string, unknown>)[day] || []).filter(
+    const activities = getPlanActivities(plan, day).filter(
       (_: any, i: number) => i !== index,
     )
     const updated = { ...plan, [day]: refreshActivityTimes(activities) }
@@ -4497,7 +4502,7 @@ export default function WeekendPage() {
     if (!plan) return
     if (fromDay === toDay && fromIndex === toIndex) return
     const updated = { ...plan }
-    const sourceActivities = [...((updated as Record<string, unknown>)[fromDay] || [])]
+    const sourceActivities = [...getPlanActivities(updated, fromDay)]
     const [moved] = sourceActivities.splice(fromIndex, 1)
     if (!moved) return
 
@@ -4506,7 +4511,7 @@ export default function WeekendPage() {
       sourceActivities.splice(boundedIndex, 0, moved)
       ;(updated as Record<string, unknown>)[fromDay] = refreshActivityTimes(sourceActivities)
     } else {
-      const targetActivities = [...((updated as Record<string, unknown>)[toDay] || [])]
+      const targetActivities = [...getPlanActivities(updated, toDay)]
       const boundedIndex = Math.max(0, Math.min(toIndex, targetActivities.length))
       targetActivities.splice(boundedIndex, 0, moved)
       ;(updated as Record<string, unknown>)[fromDay] = refreshActivityTimes(sourceActivities)
@@ -4525,7 +4530,7 @@ export default function WeekendPage() {
     if (!plan) return
     const updated = {
       ...plan,
-      [day]: refreshActivityTimes((plan as Record<string, unknown>)[day] || []),
+      [day]: refreshActivityTimes(getPlanActivities(plan, day)),
     }
     const nextPlan = withRefreshedAgendaMap(updated)
     setPlan(nextPlan)
@@ -4571,7 +4576,7 @@ export default function WeekendPage() {
 
   const checkedCount = checkedActivities.size
   const totalCount = DAY_ORDER.reduce(
-    (sum, day) => sum + ((plan as Record<string, unknown>)?.[day]?.length || 0),
+    (sum, day) => sum + getPlanActivities(plan, day).length,
     0,
   )
   const allChecked = totalCount > 0 && checkedCount === totalCount
@@ -4581,7 +4586,7 @@ export default function WeekendPage() {
     const filtered: any = { agendaMap: {} }
     for (const day of DAY_ORDER) {
       const short = DAY_SHORT[day]
-      const activities: WeekendActivity[] = (plan as Record<string, unknown>)[day] || []
+      const activities = getPlanActivities(plan, day)
       const checked = activities.filter((_: any, i: number) =>
         checkedActivities.has(`${short}-${i}`),
       )
@@ -4600,7 +4605,9 @@ export default function WeekendPage() {
     if (!defaultDb) {
       try {
         const settings = (await window.api.getSettings('appSettings')) as Record<string, unknown>
-        if (settings?.notionCalendarDbId) defaultDb = settings.notionCalendarDbId
+        if (typeof settings?.notionCalendarDbId === 'string') {
+          defaultDb = settings.notionCalendarDbId
+        }
       } catch {}
     }
     if (defaultDb) {
@@ -5194,7 +5201,7 @@ export default function WeekendPage() {
     const actsByDay: Record<string, WeekendActivity[]> = {}
     for (const day of exportDays) {
       const short = DAY_SHORT[day]
-      actsByDay[day] = ((plan as Record<string, unknown>)[day] || []).filter((_: any, i: number) =>
+      actsByDay[day] = getPlanActivities(plan, day).filter((_: any, i: number) =>
         checkedActivities.has(`${short}-${i}`),
       )
     }
@@ -5596,7 +5603,7 @@ export default function WeekendPage() {
       if (dateObj) {
         // Compute display date based on the day offset from Saturday
         const satIdx = DAY_ORDER.indexOf('saturday')
-        const dayIdx = DAY_ORDER.indexOf(label.toLowerCase())
+        const dayIdx = (DAY_ORDER as readonly string[]).indexOf(label.toLowerCase())
         const offset = dayIdx >= 0 ? dayIdx - satIdx : 0
         const displayDateObj = new Date(dateObj)
         displayDateObj.setDate(displayDateObj.getDate() + offset)
@@ -5743,7 +5750,7 @@ export default function WeekendPage() {
     const checkedByDay: Record<string, WeekendActivity[]> = {}
     for (const day of planDayKeys) {
       const short = DAY_SHORT[day]
-      const checked = ((plan as Record<string, unknown>)[day] || []).filter((_: any, i: number) =>
+      const checked = getPlanActivities(plan, day).filter((_: any, i: number) =>
         checkedActivities.has(`${short}-${i}`),
       )
       if (checked.length > 0) checkedByDay[day] = checked
@@ -6627,7 +6634,7 @@ export default function WeekendPage() {
                               activitiesByDay={Object.fromEntries(
                                 Array.from(visibleRouteDays).map((d) => [
                                   d,
-                                  (plan as Record<string, unknown>)[d] || [],
+                                  getPlanActivities(plan, d),
                                 ]),
                               )}
                             />

@@ -312,7 +312,7 @@ function runMigrations(database: Database.Database): void {
   `)
 
   // Live price quote cache — instant load, background refresh
-  db.exec(`
+  database.exec(`
     CREATE TABLE IF NOT EXISTS price_cache (
       symbol TEXT PRIMARY KEY,
       type TEXT NOT NULL,
@@ -327,7 +327,7 @@ function runMigrations(database: Database.Database): void {
 
   // Add new news_articles columns for sentiment (heuristic and AI-scored)
   // and stale-article archival.
-  const newsColumns = [
+  const newsColumns: Array<[string, string]> = [
     ['sentiment', 'TEXT'], // 'positive' | 'negative' | 'neutral'
     ['sentiment_confidence', 'REAL'], // 0..1, present when AI-scored
     ['sentiment_source', 'TEXT'], // 'heuristic' | 'ai'
@@ -338,7 +338,7 @@ function runMigrations(database: Database.Database): void {
     ['transcript_source', 'TEXT'], // youtube_captions | yt_dlp_subtitles | faster_whisper | whisper | none
     ['transcript_fetched_at', 'TEXT'], // datetime when transcript context was last attempted
   ]
-  addColumnsIfMissing(db, 'news_articles', newsColumns)
+  addColumnsIfMissing(database, 'news_articles', newsColumns)
 
   // Prompt-cache observability for ai_activity_log. Filled from
   // usage.cache_read_input_tokens / cache_creation_input_tokens; null on
@@ -348,7 +348,7 @@ function runMigrations(database: Database.Database): void {
     ['cache_read_tokens', 'INTEGER'],
     ['cache_create_tokens', 'INTEGER'],
   ]
-  addColumnsIfMissing(db, 'ai_activity_log', aiLogColumns)
+  addColumnsIfMissing(database, 'ai_activity_log', aiLogColumns)
 
   const syncColumns: Array<[string, string]> = [
     ['sync_id', 'TEXT'],
@@ -373,7 +373,7 @@ function runMigrations(database: Database.Database): void {
   `)
 
   // Add new restaurant columns (safe to re-run)
-  const restaurantColumns = [
+  const restaurantColumns: Array<[string, string]> = [
     ['venue_type', "TEXT DEFAULT 'restaurant'"], // restaurant | bar | dessert | cafe
     ['cuisine_category', 'TEXT'], // e.g. Italian, Chinese, Mexican, Mediterranean
     ['spice_level', 'TEXT'], // none | mild | medium | spicy | very-spicy
@@ -388,7 +388,7 @@ function runMigrations(database: Database.Database): void {
     ['last_researched_at', 'TEXT'], // ISO timestamp; set when AI research succeeds
     ['updated_at', 'TEXT'], // version for cross-device merge conflict resolution
   ]
-  addColumnsIfMissing(db, 'saved_restaurants', restaurantColumns)
+  addColumnsIfMissing(database, 'saved_restaurants', restaurantColumns)
   database.exec(
     `UPDATE saved_restaurants SET updated_at = COALESCE(updated_at, saved_at, datetime('now')) WHERE updated_at IS NULL`,
   )

@@ -370,7 +370,7 @@ export function registerHealthHandlers(): void {
 
         .prepare('SELECT COUNT(*) as count FROM health_metrics WHERE metric_type = ?')
 
-        .get(t) as Record<string, unknown>
+        .get(t) as { count: number } | undefined
 
       summary[t] = row?.count || 0
     }

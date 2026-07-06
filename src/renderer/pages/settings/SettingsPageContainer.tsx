@@ -2706,7 +2706,7 @@ function AppUpdatePanel() {
           {status === 'checking' ? 'Checking…' : 'Check for updates'}
         </button>
 
-        {status === 'ready' && info && info.canApply !== false && (
+        {(status === 'ready' || status === 'applying') && info && info.canApply !== false && (
           <button
             onClick={apply}
             disabled={status === 'applying'}

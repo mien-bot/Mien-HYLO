@@ -30,7 +30,7 @@ export async function getDbSchema(databaseId: string): Promise<NotionPropertyMap
   const dataSource = (await notion.dataSources.retrieve({
     data_source_id: dataSourceId,
   })) as Record<string, unknown>
-  const props = dataSource.properties || {}
+  const props = (dataSource.properties || {}) as Record<string, { id: string; type: string }>
   const schema: NotionPropertyMap = {}
   for (const name of Object.keys(props)) {
     const p = props[name]
