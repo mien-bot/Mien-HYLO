@@ -38,7 +38,8 @@ export async function resolveNotionDataSourceId(id: string): Promise<string> {
         string,
         unknown
       >
-      const dataSourceId = db.data_sources?.[0]?.id
+      const dataSources = db.data_sources as Array<{ id: string }> | undefined
+      const dataSourceId = dataSources?.[0]?.id
       if (!dataSourceId) {
         throw new Error('No data sources found for this Notion database.')
       }

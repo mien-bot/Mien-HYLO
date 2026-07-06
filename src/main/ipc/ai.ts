@@ -895,7 +895,7 @@ ${sourceContext || '(none - use web search/page context if available)'}`,
             'SELECT COUNT(*) as count FROM price_history WHERE symbol = ? AND close IS NOT NULL',
           )
 
-          .get(sym) as Record<string, unknown>
+          .get(sym) as { count: number } | undefined
 
         return !rows || rows.count < 2
       })
@@ -982,9 +982,10 @@ ${sourceContext || '(none - use web search/page context if available)'}`,
     }
 
     if (skill === 'market-research') {
-      const watchlist = db.prepare('SELECT * FROM watchlist').all() as Array<
-        Record<string, unknown>
-      >
+      const watchlist = db.prepare('SELECT * FROM watchlist').all() as Array<{
+        symbol: string
+        type: string
+      }>
 
       const prices = await getLatestPricesLive()
 
@@ -1014,29 +1015,29 @@ ${sourceContext || '(none - use web search/page context if available)'}`,
           SELECT symbol, date, close FROM price_history
   
           WHERE date >= date('now', '-7 days')
-  
+
           ORDER BY date ASC
-  
+
         `,
         )
 
-        .all() as Array<Record<string, unknown>>
+        .all() as Array<{ symbol: string; date: string; close: number }>
 
       const news = db
 
         .prepare(
           `
-  
+
           SELECT title, source, related_symbols FROM news_articles
-  
+
           WHERE archived_at IS NULL
-  
+
           ORDER BY published_at DESC LIMIT 15
-  
+
         `,
         )
 
-        .all() as Array<Record<string, unknown>>
+        .all() as Array<{ title: string; source?: string; related_symbols?: string }>
 
       const userPrompt = buildMarketResearchPrompt({
         watchlist: enrichedWatchlist,
@@ -1069,39 +1070,39 @@ ${sourceContext || '(none - use web search/page context if available)'}`,
 
       .prepare('SELECT * FROM watchlist WHERE symbol = ?')
 
-      .get(upperSymbol) as Record<string, unknown>
+      .get(upperSymbol) as { symbol: string; type: string; name?: string } | undefined
 
     const priceHistory = db
 
       .prepare(
         `
-  
+
         SELECT date, close FROM price_history
-  
+
         WHERE symbol = ? ORDER BY date DESC LIMIT 14
-  
+
       `,
       )
 
-      .all(upperSymbol) as Array<Record<string, unknown>>
+      .all(upperSymbol) as Array<{ date: string; close: number }>
 
     const news = db
 
       .prepare(
         `
-  
+
         SELECT title, source, published_at FROM news_articles
-  
+
         WHERE related_symbols LIKE ?
-  
+
           AND archived_at IS NULL
-  
+
         ORDER BY published_at DESC LIMIT 10
-  
+
       `,
       )
 
-      .all(`%${upperSymbol}%`) as Array<Record<string, unknown>>
+      .all(`%${upperSymbol}%`) as Array<{ title: string; source?: string; published_at?: string }>
 
     const prices = await getLatestPricesLive()
 

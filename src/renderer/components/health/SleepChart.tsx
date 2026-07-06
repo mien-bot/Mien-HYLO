@@ -1,4 +1,5 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts'
+import Tooltip from '../charts/ChartTooltip'
 import { format, parseISO } from 'date-fns'
 import type { HealthMetric } from '../../../shared/types/ipc.types'
 import { parseMetricValue } from '../../hooks/useHealthData'

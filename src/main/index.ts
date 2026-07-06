@@ -33,7 +33,7 @@ function createWindow(): void {
     show: false,
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),
-      sandbox: false,
+      sandbox: true,
       contextIsolation: true,
       nodeIntegration: false,
     },
@@ -60,15 +60,34 @@ function createWindow(): void {
 
   // Minimize to tray instead of closing
   mainWindow.on('close', (e) => {
-    if (!app.isQuitting) {
+    if (!appWithQuitFlag.isQuitting) {
       e.preventDefault()
       mainWindow?.hide()
     }
   })
 
-  // Open external links in browser
+  const openExternalHttpUrl = (url: string): void => {
+    try {
+      const parsed = new URL(url)
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        console.warn(`Blocked external URL with unsafe protocol: ${parsed.protocol}`)
+        return
+      }
+      void shell.openExternal(parsed.toString())
+    } catch {
+      console.warn('Blocked malformed external URL')
+    }
+  }
+
+  // Keep untrusted pages out of the privileged renderer and open normal links
+  // in the system browser.
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    event.preventDefault()
+    openExternalHttpUrl(url)
+  })
+
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
+    openExternalHttpUrl(url)
     return { action: 'deny' }
   })
 

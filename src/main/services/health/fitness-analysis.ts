@@ -70,6 +70,7 @@ export interface WorkoutRecord {
   hrZoneSeconds?: number[]
   start: string
   end: string
+  elevationGain?: number // meters
 }
 
 export interface TrainingLoadResult {
@@ -1500,9 +1501,7 @@ export function calculateYearProgression(days: number = 730): YearProgressionRes
       for (const w of day.workouts) {
         cumDist += w.distance || 0
         cumTime += w.duration || 0
-        cumElev += (w as Record<string, unknown>).elevationGain
-          ? (w as Record<string, unknown>).elevationGain * 3.28084
-          : 0 // m→ft
+        cumElev += w.elevationGain ? w.elevationGain * 3.28084 : 0 // m→ft
         cumCount++
         cumCal += w.calories || 0
       }
@@ -1594,7 +1593,7 @@ export function calculateBestEfforts(days: number = 365): BestEffortsResult {
         }
       }
       // Highest elevation
-      const elev = (w as Record<string, unknown>).elevationGain || 0
+      const elev = w.elevationGain || 0
       if (elev > 0 && (!highestElevation || elev > highestElevation.value)) {
         highestElevation = {
           date: day.date,
@@ -1822,7 +1821,7 @@ export function calculateStreamZoneAnalysis(
 function getUserFTP(): number {
   try {
     const settings = getAppSettings()
-    const ftp = parseInt(settings?.ftp)
+    const ftp = parseInt(settings?.ftp ?? '', 10)
     return ftp > 0 ? ftp : 0
   } catch {}
   return 0
@@ -2105,7 +2104,7 @@ export function calculateRunningPower(days: number = 365): RunningPowerResult {
   let weightKg = 70 // default
   try {
     const settings = getAppSettings()
-    const lbs = parseFloat(settings?.userWeight)
+    const lbs = parseFloat(settings?.userWeight ?? '')
     if (lbs > 0) weightKg = lbs * 0.453592
   } catch {}
 

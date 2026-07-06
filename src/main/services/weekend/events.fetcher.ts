@@ -38,7 +38,7 @@ export async function fetchTicketmasterEvents(
   if (!apiKey) return []
 
   const city = options.city || settings?.weekendCity || 'Chicago'
-  const radius = options.radius || parseInt(settings?.weekendRadius) || 30
+  const radius = options.radius || parseInt(settings?.weekendRadius ?? '', 10) || 30
   const size = options.size || 30
 
   // Default to upcoming weekend
@@ -77,7 +77,9 @@ export async function fetchTicketmasterEvents(
           const events = json._embedded?.events || []
           resolve(
             dedupeLocalEvents(
-              events.map(parseTicketmasterEvent).map((e) => validateEventCoords(e, city, radius)),
+              events
+                .map(parseTicketmasterEvent)
+                .map((e: LocalEvent) => validateEventCoords(e, city, radius)),
             ),
           )
         } catch {
@@ -497,7 +499,7 @@ export async function searchTicketmasterEvents(
   if (!apiKey) return { events: [], page: 0, totalPages: 0, totalElements: 0 }
 
   const city = settings?.weekendCity || 'Chicago'
-  const radius = parseInt(settings?.weekendRadius) || 30
+  const radius = parseInt(settings?.weekendRadius ?? '', 10) || 30
 
   const params = new URLSearchParams({
     apikey: apiKey,
@@ -553,7 +555,9 @@ export async function searchTicketmasterEvents(
             const page = json?.page || {}
             resolve({
               events: dedupeLocalEvents(
-                events.map(parseTicketmasterEvent).map((e) => validateEventCoords(e, city, radius)),
+                events
+                .map(parseTicketmasterEvent)
+                .map((e: LocalEvent) => validateEventCoords(e, city, radius)),
               ),
               page: page.number || options.page || 0,
               totalPages: page.totalPages || 0,

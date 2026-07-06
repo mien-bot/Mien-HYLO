@@ -26,12 +26,12 @@ import {
   Bar,
   XAxis,
   YAxis,
-  Tooltip,
   ResponsiveContainer,
   CartesianGrid,
   ReferenceLine,
   Cell,
 } from 'recharts'
+import Tooltip from '../../components/charts/ChartTooltip'
 import { format, parseISO } from 'date-fns'
 import NoodleSpinner from '../../components/anim/NoodleSpinner'
 import { useToast } from '../../components/Toast'
@@ -718,7 +718,7 @@ export default function ActivityDetailPage() {
               <Tooltip
                 contentStyle={tooltipStyle}
                 formatter={(value: number) => [fmtPace(value), 'Pace']}
-                labelFormatter={(label) => `Split ${label}`}
+                labelFormatter={(label: string | number) => `Split ${label}`}
               />
               <Bar dataKey="paceMinPerMi" radius={[3, 3, 0, 0]}>
                 {splits.map((s, i) => {
@@ -983,7 +983,7 @@ function StreamChart({
           <Tooltip
             contentStyle={tooltipStyle}
             formatter={(value: number) => [`${value} bpm`, 'Heart Rate']}
-            labelFormatter={(t) => `at ${fmtTimeAxis(t)}`}
+            labelFormatter={(t: number) => `at ${fmtTimeAxis(t)}`}
           />
           {zones.map((z) => {
             if (z.maxBpm === Infinity || z.maxBpm > 220) return null
@@ -1031,7 +1031,7 @@ function StreamChart({
               isPace ? fmtPace(value) : `${value} mph`,
               isPace ? 'Pace' : 'Speed',
             ]}
-            labelFormatter={(t) => `at ${fmtTimeAxis(t)}`}
+            labelFormatter={(t: number) => `at ${fmtTimeAxis(t)}`}
           />
           <Line
             type="monotone"
@@ -1069,7 +1069,7 @@ function StreamChart({
           <Tooltip
             contentStyle={tooltipStyle}
             formatter={(value: number) => [`${value} ft`, 'Elevation']}
-            labelFormatter={(t) => `at ${fmtTimeAxis(t)}`}
+            labelFormatter={(t: number) => `at ${fmtTimeAxis(t)}`}
           />
           <Area type="monotone" dataKey="altitudeFt" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.3} dot={false} strokeWidth={1.5} />
         </AreaChart>
@@ -1100,7 +1100,7 @@ function StreamChart({
           <Tooltip
             contentStyle={tooltipStyle}
             formatter={(value: number) => [`${value} W`, 'Power']}
-            labelFormatter={(t) => `at ${fmtTimeAxis(t)}`}
+            labelFormatter={(t: number) => `at ${fmtTimeAxis(t)}`}
           />
           <Area type="monotone" dataKey="watts" stroke="#a855f7" fill="#a855f7" fillOpacity={0.25} dot={false} strokeWidth={1.5} />
         </AreaChart>
@@ -1131,7 +1131,7 @@ function StreamChart({
         <Tooltip
           contentStyle={tooltipStyle}
           formatter={(value: number) => [`${value} ${sport === 'run' ? 'spm' : 'rpm'}`, 'Cadence']}
-          labelFormatter={(t) => `at ${fmtTimeAxis(t)}`}
+          labelFormatter={(t: number) => `at ${fmtTimeAxis(t)}`}
         />
         <Line type="monotone" dataKey="cadence" stroke="#3b82f6" strokeWidth={1.5} dot={false} />
       </LineChart>

@@ -1,4 +1,4 @@
-export type Density = 'compact' | 'comfortable'
+export type Density = 'compact' | 'comfortable' | 'spacious'
 
 export interface RangeOption {
   label: string

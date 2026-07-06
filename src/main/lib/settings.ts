@@ -1,5 +1,4 @@
 import store from './store'
-import { getAppSettings } from './settings'
 
 export interface AppSettings {
   // API Keys

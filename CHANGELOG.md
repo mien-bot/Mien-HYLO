@@ -4,6 +4,17 @@
 
 ---
 
+## v1.10.2 — 2026-07-05 — Public Safety & Build Reliability
+
+- Protected the desktop health receiver with bearer authentication for LAN access; tokenless installs now bind to localhost only.
+- Added request-size and query-range limits to health endpoints and hardened relay token comparison and webhook body handling.
+- Blocked unsafe Electron navigation and external URL protocols, and enabled renderer sandboxing.
+- Restored desktop renderer and main-process typechecks, including Recharts compatibility and weekend-plan guards.
+- Fixed Electron health-file imports to use `webUtils.getPathForFile` and corrected the updater's applying state.
+- Expanded `health:quick` to detect tracked credential/database files, high-confidence secret patterns, and desktop version drift.
+
+---
+
 ## v1.10.0 — 2026-05-29 — Visual Glow-Up & Personalization
 
 ### Visual Overhaul (Desktop + Mobile)

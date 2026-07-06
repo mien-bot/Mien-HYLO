@@ -31,11 +31,11 @@ import {
   ComposedChart,
   XAxis,
   YAxis,
-  Tooltip,
   ResponsiveContainer,
   ReferenceLine,
   CartesianGrid,
 } from 'recharts'
+import Tooltip from '../components/charts/ChartTooltip'
 import { format, parseISO, subDays, eachDayOfInterval, differenceInDays } from 'date-fns'
 import { useHealthMetrics, parseMetricValue } from '../hooks/useHealthData'
 import NoodleSpinner from '../components/anim/NoodleSpinner'

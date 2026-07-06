@@ -112,7 +112,9 @@ function initAuth() {
 
   if (fs.existsSync(KEY_PATH)) {
     AUTH_TOKEN = fs.readFileSync(KEY_PATH, 'utf-8').trim()
-  } else {
+  }
+
+  if (AUTH_TOKEN.length < 32) {
     // Generate a secure random token on first run
     AUTH_TOKEN = crypto.randomBytes(32).toString('base64url')
     fs.writeFileSync(KEY_PATH, AUTH_TOKEN, { mode: 0o600 })
@@ -140,8 +142,14 @@ function checkAuth(req, res) {
     return false
   }
 
-  const token = authHeader.replace(/^Bearer\s+/i, '')
-  if (token !== AUTH_TOKEN) {
+  const match = authHeader.match(/^Bearer\s+(.+)$/i)
+  const token = match?.[1] || ''
+  const tokenBytes = Buffer.from(token)
+  const expectedBytes = Buffer.from(AUTH_TOKEN)
+  const valid =
+    tokenBytes.length === expectedBytes.length &&
+    crypto.timingSafeEqual(tokenBytes, expectedBytes)
+  if (!valid) {
     res.writeHead(403, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' })
     res.end(JSON.stringify({ error: { message: 'Invalid token. Check relay.key on the server.' } }))
     return false
@@ -2532,8 +2540,22 @@ const server = http.createServer(async (req, res) => {
   // POST /strava/webhook — incoming activity events from Strava
   if (req.method === 'POST' && req.url === '/strava/webhook') {
     let body = ''
-    req.on('data', chunk => { body += chunk })
+    let bodyTooLarge = false
+    req.on('data', chunk => {
+      if (bodyTooLarge) return
+      if (Buffer.byteLength(body) + chunk.length > 64 * 1024) {
+        bodyTooLarge = true
+        body = ''
+        return
+      }
+      body += chunk
+    })
     req.on('end', async () => {
+      if (bodyTooLarge) {
+        res.writeHead(413, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ error: 'Request body too large' }))
+        return
+      }
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({ received: true })) // respond fast — Strava expects <2s
       try {

@@ -590,7 +590,7 @@ export default function HealthPage() {
 
       setImportStatus('Importing...')
       try {
-        const filePath = (file as Record<string, unknown>).path
+        const filePath = window.api.getPathForFile(file)
         if (filePath) {
           const count = await window.api.importHealthFile(filePath)
           setImportStatus(`Imported ${count} metrics`)

@@ -20,7 +20,7 @@ const RECENT_DAYS = 14
 function getDailyCap(): number {
   const settings = getAppSettings()
   const raw = settings?.newsSentimentDailyCap
-  const n = typeof raw === 'number' ? raw : parseInt(raw, 10)
+  const n = typeof raw === 'number' ? raw : parseInt(raw ?? '', 10)
   if (Number.isFinite(n) && n > 0 && n <= 1000) return n
   return DEFAULT_DAILY_CAP
 }

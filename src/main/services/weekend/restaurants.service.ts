@@ -465,10 +465,17 @@ export function getSavedRestaurants(filter?: {
   if (clauses.length > 0) sql += ' WHERE ' + clauses.join(' AND ')
   sql += ' ORDER BY saved_at DESC'
 
-  const rows = db.prepare(sql).all(...params) as Array<Record<string, unknown>>
+  const rows = db.prepare(sql).all(...params) as Array<Record<string, any>>
   const allVisits = db
     .prepare('SELECT * FROM restaurant_visits WHERE deleted_at IS NULL ORDER BY visit_date DESC')
-    .all() as Array<Record<string, unknown>>
+    .all() as Array<{
+    id: number
+    place_id: string
+    visit_date: string
+    rating: number | null
+    notes: string | null
+    created_at: string
+  }>
   const visitsByPlace = new Map<string, RestaurantVisit[]>()
   for (const v of allVisits) {
     const list = visitsByPlace.get(v.place_id) || []
@@ -866,7 +873,14 @@ export function getVisits(placeId: string): RestaurantVisit[] {
     .prepare(
       'SELECT * FROM restaurant_visits WHERE place_id = ? AND deleted_at IS NULL ORDER BY visit_date DESC',
     )
-    .all(placeId) as Array<Record<string, unknown>>
+    .all(placeId) as Array<{
+    id: number
+    place_id: string
+    visit_date: string
+    rating: number | null
+    notes: string | null
+    created_at: string
+  }>
   return rows.map((v) => ({
     id: v.id,
     placeId: v.place_id,
@@ -894,7 +908,7 @@ export async function describePlace(
   const db = getDb()
   const row = db
     .prepare('SELECT description FROM saved_restaurants WHERE name = ? AND description IS NOT NULL')
-    .get(name) as Record<string, unknown>
+    .get(name) as { description: string } | undefined
   if (row?.description) {
     placeDescriptionCache.set(cacheKey, row.description)
     return row.description
@@ -903,13 +917,9 @@ export async function describePlace(
   const settings = getAppSettings()
   const city = settings?.weekendCity || 'Chicago'
 
-  let description = ''
-  await generateAnalysisStreaming(
+  let description = await generateAnalysisStreaming(
     "You are a local expert. Give a 1-2 sentence description of what this place is and what it's known for. Be specific and concise. Just the description text, no JSON or formatting.",
     `What is "${name}" at ${address || city}?${primaryType ? ` (Type: ${primaryType})` : ''}`,
-    (chunk) => {
-      description += chunk
-    },
   )
 
   description = description.trim()
@@ -923,9 +933,9 @@ async function performRestaurantResearch(
   placeId: string,
 ): Promise<{ response: string; updated: boolean }> {
   const db = getDb()
-  const row = db
-    .prepare('SELECT * FROM saved_restaurants WHERE place_id = ?')
-    .get(placeId) as Record<string, unknown>
+  const row = db.prepare('SELECT * FROM saved_restaurants WHERE place_id = ?').get(placeId) as
+    | Record<string, any>
+    | undefined
   if (!row) throw new Error('Restaurant not found')
 
   const settings = getAppSettings()

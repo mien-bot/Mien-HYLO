@@ -206,7 +206,9 @@ Both the desktop pull and the relay cleanup endpoint filter bad data:
 (`http://<desktop-ip>:19876/health/auto-export`) or the relay
 (`https://<your-relay-host>/health/auto-export`). Local-network is real-time;
 the relay path costs up to ~30 min latency because desktop only pulls from
-the relay on its scheduler tick. Use the relay path when the phone is off-LAN.
+the relay on its scheduler tick. Both paths require `Authorization: Bearer
+<relay-token>`, and the same token must be saved in desktop Settings for direct
+LAN access. Use the relay path when the phone is off-LAN.
 
 **Relay's health store suddenly empty after a successful sync**
 → Pre-fix bug: `/sync/push-all` did a wholesale replace instead of a merge, so
