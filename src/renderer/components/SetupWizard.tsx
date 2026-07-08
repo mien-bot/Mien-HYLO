@@ -7,6 +7,31 @@ const WIZARD_VERSION = '1.2.0'
 
 type Step = 'welcome' | 'credentials' | 'apis' | 'done'
 
+const STEP_ORDER: Step[] = ['welcome', 'credentials', 'apis', 'done']
+
+/** Row of dots showing progress through the wizard steps. */
+function StepDots({ current }: { current: Step }) {
+  const activeIndex = STEP_ORDER.indexOf(current)
+  return (
+    <div
+      className="flex items-center justify-center gap-1.5"
+      aria-label={`Step ${activeIndex + 1} of ${STEP_ORDER.length}`}
+    >
+      {STEP_ORDER.map((s, i) => (
+        <span
+          key={s}
+          className="rounded-full transition-all duration-300"
+          style={{
+            width: i === activeIndex ? 16 : 6,
+            height: 6,
+            background: i <= activeIndex ? 'var(--accent-blue)' : 'var(--separator)',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
 interface WizardSettings {
   relayUrl?: string
   relayToken?: string
@@ -155,9 +180,12 @@ export default function SetupWizard({ onClose }: Props) {
           className="absolute top-3 right-3 p-1 rounded transition-colors hover:opacity-70"
           style={{ color: 'var(--text-muted)' }}
           aria-label="Skip setup"
+          title="Skip setup (Esc)"
         >
           <X size={16} />
         </button>
+
+        <StepDots current={step} />
 
         {step === 'welcome' && (
           <>
