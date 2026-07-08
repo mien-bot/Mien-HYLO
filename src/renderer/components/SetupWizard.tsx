@@ -1,5 +1,5 @@
-import { lazy, Suspense, useState, useEffect } from 'react'
-import { Sparkles, ArrowRight, Check, X } from 'lucide-react'
+import { lazy, Suspense, useState, useEffect, type FormEvent } from 'react'
+import { Sparkles, ArrowRight, Check, X, Eye, EyeOff } from 'lucide-react'
 
 const RamenScene = lazy(() => import('./anim/RamenScene'))
 
@@ -20,6 +20,48 @@ interface WizardSettings {
 
 interface Props {
   onClose: () => void
+}
+
+/** Masked input with a show/hide toggle, used for tokens and API keys. */
+function SecretInput({
+  value,
+  onChange,
+  placeholder,
+  ariaLabel,
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+  ariaLabel: string
+}) {
+  const [revealed, setRevealed] = useState(false)
+  return (
+    <div className="relative">
+      <input
+        type={revealed ? 'text' : 'password'}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        aria-label={ariaLabel}
+        className="w-full px-2.5 py-1.5 pr-8 rounded text-xs outline-none"
+        style={{
+          background: 'var(--bg-primary)',
+          border: '1px solid var(--separator)',
+          color: 'var(--text-primary)',
+        }}
+      />
+      <button
+        type="button"
+        onClick={() => setRevealed((r) => !r)}
+        className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded transition-opacity hover:opacity-70"
+        style={{ color: 'var(--text-muted)' }}
+        aria-label={revealed ? `Hide ${ariaLabel}` : `Show ${ariaLabel}`}
+        title={revealed ? 'Hide' : 'Show'}
+      >
+        {revealed ? <EyeOff size={12} /> : <Eye size={12} />}
+      </button>
+    </div>
+  )
 }
 
 /**
@@ -84,6 +126,17 @@ export default function SetupWizard({ onClose }: Props) {
     } catch {}
     onClose()
   }
+
+  // Escape dismisses the wizard the same way the corner ✕ does — settings
+  // entered so far are kept in state only, so nothing is half-saved.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') skip()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div
@@ -160,7 +213,13 @@ export default function SetupWizard({ onClose }: Props) {
         )}
 
         {step === 'credentials' && (
-          <>
+          <form
+            onSubmit={(e: FormEvent) => {
+              e.preventDefault()
+              setStep('apis')
+            }}
+            className="space-y-5"
+          >
             <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
               Connect to Claude
             </h2>
@@ -190,17 +249,11 @@ export default function SetupWizard({ onClose }: Props) {
                 <label className="block text-[10px] mb-1" style={{ color: 'var(--text-muted)' }}>
                   Relay Bearer Token
                 </label>
-                <input
-                  type="password"
+                <SecretInput
                   value={relayToken}
-                  onChange={(e) => setRelayToken(e.target.value)}
+                  onChange={setRelayToken}
                   placeholder="paste from relay/relay.key"
-                  className="w-full px-2.5 py-1.5 rounded text-xs outline-none"
-                  style={{
-                    background: 'var(--bg-primary)',
-                    border: '1px solid var(--separator)',
-                    color: 'var(--text-primary)',
-                  }}
+                  ariaLabel="Relay bearer token"
                 />
               </div>
 
@@ -211,23 +264,18 @@ export default function SetupWizard({ onClose }: Props) {
                 <label className="block text-[10px] mb-1" style={{ color: 'var(--text-muted)' }}>
                   API Key
                 </label>
-                <input
-                  type="password"
+                <SecretInput
                   value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
+                  onChange={setApiKey}
                   placeholder="sk-ant-..."
-                  className="w-full px-2.5 py-1.5 rounded text-xs outline-none"
-                  style={{
-                    background: 'var(--bg-primary)',
-                    border: '1px solid var(--separator)',
-                    color: 'var(--text-primary)',
-                  }}
+                  ariaLabel="Claude API key"
                 />
               </div>
             </div>
 
             <div className="flex justify-between gap-2 pt-2">
               <button
+                type="button"
                 onClick={() => setStep('welcome')}
                 className="text-xs px-3 py-1.5 rounded transition-colors"
                 style={{ color: 'var(--text-muted)' }}
@@ -236,6 +284,7 @@ export default function SetupWizard({ onClose }: Props) {
               </button>
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={skip}
                   className="text-xs px-3 py-1.5 rounded transition-colors"
                   style={{ color: 'var(--text-muted)' }}
@@ -243,7 +292,7 @@ export default function SetupWizard({ onClose }: Props) {
                   Skip
                 </button>
                 <button
-                  onClick={() => setStep('apis')}
+                  type="submit"
                   className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg transition-colors"
                   style={{ background: 'var(--accent-blue)', color: 'white' }}
                 >
@@ -251,11 +300,17 @@ export default function SetupWizard({ onClose }: Props) {
                 </button>
               </div>
             </div>
-          </>
+          </form>
         )}
 
         {step === 'apis' && (
-          <>
+          <form
+            onSubmit={(e: FormEvent) => {
+              e.preventDefault()
+              setStep('done')
+            }}
+            className="space-y-5"
+          >
             <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
               Optional integrations
             </h2>
@@ -275,17 +330,11 @@ export default function SetupWizard({ onClose }: Props) {
                 <p className="text-[10px] mb-1.5" style={{ color: 'var(--text-muted)' }}>
                   Free tier: 25 req/day. Grab at alphavantage.co/support/#api-key
                 </p>
-                <input
-                  type="password"
+                <SecretInput
                   value={alphaVantageKey}
-                  onChange={(e) => setAlphaVantageKey(e.target.value)}
+                  onChange={setAlphaVantageKey}
                   placeholder="paste API key (optional)"
-                  className="w-full px-2.5 py-1.5 rounded text-xs outline-none"
-                  style={{
-                    background: 'var(--bg-primary)',
-                    border: '1px solid var(--separator)',
-                    color: 'var(--text-primary)',
-                  }}
+                  ariaLabel="Alpha Vantage API key"
                 />
               </div>
 
@@ -296,17 +345,11 @@ export default function SetupWizard({ onClose }: Props) {
                 <p className="text-[10px] mb-1.5" style={{ color: 'var(--text-muted)' }}>
                   Free tier: 5000 req/day. developer.ticketmaster.com
                 </p>
-                <input
-                  type="password"
+                <SecretInput
                   value={ticketmasterApiKey}
-                  onChange={(e) => setTicketmasterApiKey(e.target.value)}
+                  onChange={setTicketmasterApiKey}
                   placeholder="paste API key (optional)"
-                  className="w-full px-2.5 py-1.5 rounded text-xs outline-none"
-                  style={{
-                    background: 'var(--bg-primary)',
-                    border: '1px solid var(--separator)',
-                    color: 'var(--text-primary)',
-                  }}
+                  ariaLabel="Ticketmaster API key"
                 />
               </div>
 
@@ -318,23 +361,18 @@ export default function SetupWizard({ onClose }: Props) {
                 <p className="text-[10px] mb-1.5" style={{ color: 'var(--text-muted)' }}>
                   Paid (small free quota). console.cloud.google.com
                 </p>
-                <input
-                  type="password"
+                <SecretInput
                   value={googlePlacesKey}
-                  onChange={(e) => setGooglePlacesKey(e.target.value)}
+                  onChange={setGooglePlacesKey}
                   placeholder="paste API key (optional)"
-                  className="w-full px-2.5 py-1.5 rounded text-xs outline-none"
-                  style={{
-                    background: 'var(--bg-primary)',
-                    border: '1px solid var(--separator)',
-                    color: 'var(--text-primary)',
-                  }}
+                  ariaLabel="Google Places API key"
                 />
               </div>
             </div>
 
             <div className="flex justify-between gap-2 pt-2">
               <button
+                type="button"
                 onClick={() => setStep('credentials')}
                 className="text-xs px-3 py-1.5 rounded transition-colors"
                 style={{ color: 'var(--text-muted)' }}
@@ -342,14 +380,14 @@ export default function SetupWizard({ onClose }: Props) {
                 Back
               </button>
               <button
-                onClick={() => setStep('done')}
+                type="submit"
                 className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg transition-colors"
                 style={{ background: 'var(--accent-blue)', color: 'white' }}
               >
                 Continue <ArrowRight size={14} />
               </button>
             </div>
-          </>
+          </form>
         )}
 
         {step === 'done' && (

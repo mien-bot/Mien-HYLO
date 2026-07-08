@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, FormEvent } from 'react'
-import { Lock, ArrowRight } from 'lucide-react'
+import { useEffect, useRef, useState, FormEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
 
 interface Props {
   mode: 'setup' | 'unlock'
@@ -11,11 +11,17 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const [capsLockOn, setCapsLockOn] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
+
+  const checkCapsLock = (e: ReactKeyboardEvent<HTMLInputElement>) => {
+    setCapsLockOn(e.getModifierState('CapsLock'))
+  }
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -60,6 +66,7 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
   }
 
   const isSetup = mode === 'setup'
+  const inputType = revealed ? 'text' : 'password'
 
   return (
     <div
@@ -97,19 +104,34 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
           <label className="block text-[10px]" style={{ color: 'var(--text-muted)' }}>
             Password
           </label>
-          <input
-            ref={inputRef}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete={isSetup ? 'new-password' : 'current-password'}
-            className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{
-              background: 'var(--bg-primary)',
-              border: '1px solid var(--separator)',
-              color: 'var(--text-primary)',
-            }}
-          />
+          <div className="relative">
+            <input
+              ref={inputRef}
+              type={inputType}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={checkCapsLock}
+              onKeyUp={checkCapsLock}
+              autoComplete={isSetup ? 'new-password' : 'current-password'}
+              className="w-full px-3 py-2 pr-10 rounded text-sm outline-none"
+              style={{
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--separator)',
+                color: 'var(--text-primary)',
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setRevealed((r) => !r)}
+              tabIndex={-1}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded transition-opacity hover:opacity-70"
+              style={{ color: 'var(--text-muted)' }}
+              aria-label={revealed ? 'Hide password' : 'Show password'}
+              title={revealed ? 'Hide password' : 'Show password'}
+            >
+              {revealed ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          </div>
 
           {isSetup && (
             <>
@@ -117,9 +139,11 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
                 Confirm password
               </label>
               <input
-                type="password"
+                type={inputType}
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
+                onKeyDown={checkCapsLock}
+                onKeyUp={checkCapsLock}
                 autoComplete="new-password"
                 className="w-full px-3 py-2 rounded text-sm outline-none"
                 style={{
@@ -132,8 +156,14 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
           )}
         </div>
 
+        {capsLockOn && (
+          <div className="text-xs" style={{ color: 'var(--accent-orange, #f59e0b)' }} role="status">
+            Caps Lock is on.
+          </div>
+        )}
+
         {error && (
-          <div className="text-xs" style={{ color: 'var(--accent-red, #ef4444)' }}>
+          <div className="text-xs" style={{ color: 'var(--accent-red, #ef4444)' }} role="alert">
             {error}
           </div>
         )}

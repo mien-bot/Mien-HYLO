@@ -29,14 +29,27 @@ export default class ErrorBoundary extends React.Component<{ children: React.Rea
               {this.state.error?.message || 'An unexpected error occurred.'}
             </p>
           </div>
-          <button
-            onClick={() => this.setState({ hasError: false, error: null })}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors"
-            style={{ background: 'var(--accent-blue)', color: 'white' }}
-          >
-            <RefreshCw size={14} />
-            Try Again
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => this.setState({ hasError: false, error: null })}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors"
+              style={{ background: 'var(--accent-blue)', color: 'white' }}
+            >
+              <RefreshCw size={14} />
+              Try Again
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-lg text-sm transition-colors"
+              style={{
+                background: 'var(--bg-tertiary)',
+                border: '1px solid var(--separator)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              Reload app
+            </button>
+          </div>
         </div>
       )
     }
