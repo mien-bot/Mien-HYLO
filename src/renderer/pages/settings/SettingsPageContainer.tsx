@@ -1,16 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import {
-  Save,
-  Check,
-  Link2,
-  Copy,
-  RefreshCw,
-  Search,
-  ChevronDown,
-  Unlink,
-  Eye,
-  EyeOff,
-} from 'lucide-react'
+import { Save, Check, Link2, Copy, RefreshCw, Search, ChevronDown, Unlink } from 'lucide-react'
+import SecretInput from '../../components/SecretInput'
 import { ChartCard, RadialGauge, SparklineRow, TrendBadge } from '../../components/charts'
 import { useAiCacheStats, useRelayStats, useSchedulerSuccessRate } from '../../hooks/useAggregations'
 import { applyChartPalette } from '../../lib/chartPalette'
@@ -1448,39 +1438,28 @@ function Field({
   placeholder?: string
   type?: string
 }) {
-  const [revealed, setRevealed] = useState(false)
   const isSecret = type === 'password'
+  const inputProps = {
+    value,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
+    placeholder,
+    className: `w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-colors ${isSecret ? 'pr-10' : ''}`,
+    style: {
+      background: 'var(--bg-tertiary)',
+      border: '1px solid var(--separator)',
+      color: 'var(--text-primary)',
+    },
+  }
   return (
     <div>
       <label className="block text-xs mb-1.5" style={{ color: 'var(--text-muted)' }}>
         {label}
       </label>
-      <div className="relative">
-        <input
-          type={isSecret && !revealed ? 'password' : isSecret ? 'text' : type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className={`w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-colors ${isSecret ? 'pr-10' : ''}`}
-          style={{
-            background: 'var(--bg-tertiary)',
-            border: '1px solid var(--separator)',
-            color: 'var(--text-primary)',
-          }}
-        />
-        {isSecret && (
-          <button
-            type="button"
-            onClick={() => setRevealed((r) => !r)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded transition-opacity hover:opacity-70"
-            style={{ color: 'var(--text-muted)' }}
-            aria-label={revealed ? `Hide ${label}` : `Show ${label}`}
-            title={revealed ? 'Hide' : 'Show'}
-          >
-            {revealed ? <EyeOff size={14} /> : <Eye size={14} />}
-          </button>
-        )}
-      </div>
+      {isSecret ? (
+        <SecretInput secretLabel={label} {...inputProps} />
+      ) : (
+        <input type={type} {...inputProps} />
+      )}
     </div>
   )
 }

@@ -1,5 +1,7 @@
 import { lazy, Suspense, useState, useEffect, type FormEvent } from 'react'
-import { Sparkles, ArrowRight, Check, X, Eye, EyeOff } from 'lucide-react'
+import { Sparkles, ArrowRight, Check, X } from 'lucide-react'
+import SecretInput from './SecretInput'
+import { useToast } from './Toast'
 
 const RamenScene = lazy(() => import('./anim/RamenScene'))
 
@@ -47,46 +49,11 @@ interface Props {
   onClose: () => void
 }
 
-/** Masked input with a show/hide toggle, used for tokens and API keys. */
-function SecretInput({
-  value,
-  onChange,
-  placeholder,
-  ariaLabel,
-}: {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  ariaLabel: string
-}) {
-  const [revealed, setRevealed] = useState(false)
-  return (
-    <div className="relative">
-      <input
-        type={revealed ? 'text' : 'password'}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        aria-label={ariaLabel}
-        className="w-full px-2.5 py-1.5 pr-8 rounded text-xs outline-none"
-        style={{
-          background: 'var(--bg-primary)',
-          border: '1px solid var(--separator)',
-          color: 'var(--text-primary)',
-        }}
-      />
-      <button
-        type="button"
-        onClick={() => setRevealed((r) => !r)}
-        className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded transition-opacity hover:opacity-70"
-        style={{ color: 'var(--text-muted)' }}
-        aria-label={revealed ? `Hide ${ariaLabel}` : `Show ${ariaLabel}`}
-        title={revealed ? 'Hide' : 'Show'}
-      >
-        {revealed ? <EyeOff size={12} /> : <Eye size={12} />}
-      </button>
-    </div>
-  )
+const secretInputClass = 'w-full px-2.5 py-1.5 pr-8 rounded text-xs outline-none'
+const secretInputStyle = {
+  background: 'var(--bg-primary)',
+  border: '1px solid var(--separator)',
+  color: 'var(--text-primary)',
 }
 
 /**
@@ -95,6 +62,7 @@ function SecretInput({
  * appSettings.onboardingCompletedVersion is missing.
  */
 export default function SetupWizard({ onClose }: Props) {
+  const { showToast } = useToast()
   const [step, setStep] = useState<Step>('welcome')
   const [relayUrl, setRelayUrl] = useState('')
   const [relayToken, setRelayToken] = useState('')
@@ -135,7 +103,9 @@ export default function SetupWizard({ onClose }: Props) {
       }
       await window.api.setSettings('appSettings', next)
     } catch (err) {
-      console.error('Wizard save failed:', err)
+      showToast(`Could not save settings: ${(err as Error)?.message || err}`, 'error')
+      setSaving(false)
+      return
     }
     setSaving(false)
     onClose()
@@ -279,9 +249,13 @@ export default function SetupWizard({ onClose }: Props) {
                 </label>
                 <SecretInput
                   value={relayToken}
-                  onChange={setRelayToken}
+                  onChange={(e) => setRelayToken(e.target.value)}
                   placeholder="paste from relay/relay.key"
-                  ariaLabel="Relay bearer token"
+                  aria-label="Relay bearer token"
+                  secretLabel="relay bearer token"
+                  toggleSize={12}
+                  className={secretInputClass}
+                  style={secretInputStyle}
                 />
               </div>
 
@@ -294,9 +268,13 @@ export default function SetupWizard({ onClose }: Props) {
                 </label>
                 <SecretInput
                   value={apiKey}
-                  onChange={setApiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
                   placeholder="sk-ant-..."
-                  ariaLabel="Claude API key"
+                  aria-label="Claude API key"
+                  secretLabel="Claude API key"
+                  toggleSize={12}
+                  className={secretInputClass}
+                  style={secretInputStyle}
                 />
               </div>
             </div>
@@ -360,9 +338,13 @@ export default function SetupWizard({ onClose }: Props) {
                 </p>
                 <SecretInput
                   value={alphaVantageKey}
-                  onChange={setAlphaVantageKey}
+                  onChange={(e) => setAlphaVantageKey(e.target.value)}
                   placeholder="paste API key (optional)"
-                  ariaLabel="Alpha Vantage API key"
+                  aria-label="Alpha Vantage API key"
+                  secretLabel="Alpha Vantage API key"
+                  toggleSize={12}
+                  className={secretInputClass}
+                  style={secretInputStyle}
                 />
               </div>
 
@@ -375,9 +357,13 @@ export default function SetupWizard({ onClose }: Props) {
                 </p>
                 <SecretInput
                   value={ticketmasterApiKey}
-                  onChange={setTicketmasterApiKey}
+                  onChange={(e) => setTicketmasterApiKey(e.target.value)}
                   placeholder="paste API key (optional)"
-                  ariaLabel="Ticketmaster API key"
+                  aria-label="Ticketmaster API key"
+                  secretLabel="Ticketmaster API key"
+                  toggleSize={12}
+                  className={secretInputClass}
+                  style={secretInputStyle}
                 />
               </div>
 
@@ -391,9 +377,13 @@ export default function SetupWizard({ onClose }: Props) {
                 </p>
                 <SecretInput
                   value={googlePlacesKey}
-                  onChange={setGooglePlacesKey}
+                  onChange={(e) => setGooglePlacesKey(e.target.value)}
                   placeholder="paste API key (optional)"
-                  ariaLabel="Google Places API key"
+                  aria-label="Google Places API key"
+                  secretLabel="Google Places API key"
+                  toggleSize={12}
+                  className={secretInputClass}
+                  style={secretInputStyle}
                 />
               </div>
             </div>

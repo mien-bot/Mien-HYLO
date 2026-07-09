@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, FormEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
-import { Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { Lock, ArrowRight } from 'lucide-react'
+import SecretInput from './SecretInput'
 
 interface Props {
   mode: 'setup' | 'unlock'
@@ -11,7 +12,6 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [revealed, setRevealed] = useState(false)
   const [capsLockOn, setCapsLockOn] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -66,7 +66,11 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
   }
 
   const isSetup = mode === 'setup'
-  const inputType = revealed ? 'text' : 'password'
+  const passwordInputStyle = {
+    background: 'var(--bg-primary)',
+    border: '1px solid var(--separator)',
+    color: 'var(--text-primary)',
+  }
 
   return (
     <div
@@ -104,53 +108,32 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
           <label className="block text-[10px]" style={{ color: 'var(--text-muted)' }}>
             Password
           </label>
-          <div className="relative">
-            <input
-              ref={inputRef}
-              type={inputType}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={checkCapsLock}
-              onKeyUp={checkCapsLock}
-              autoComplete={isSetup ? 'new-password' : 'current-password'}
-              className="w-full px-3 py-2 pr-10 rounded text-sm outline-none"
-              style={{
-                background: 'var(--bg-primary)',
-                border: '1px solid var(--separator)',
-                color: 'var(--text-primary)',
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setRevealed((r) => !r)}
-              tabIndex={-1}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded transition-opacity hover:opacity-70"
-              style={{ color: 'var(--text-muted)' }}
-              aria-label={revealed ? 'Hide password' : 'Show password'}
-              title={revealed ? 'Hide password' : 'Show password'}
-            >
-              {revealed ? <EyeOff size={14} /> : <Eye size={14} />}
-            </button>
-          </div>
+          <SecretInput
+            ref={inputRef}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={checkCapsLock}
+            onKeyUp={checkCapsLock}
+            autoComplete={isSetup ? 'new-password' : 'current-password'}
+            secretLabel="password"
+            className="w-full px-3 py-2 pr-10 rounded text-sm outline-none"
+            style={passwordInputStyle}
+          />
 
           {isSetup && (
             <>
               <label className="block text-[10px] pt-1" style={{ color: 'var(--text-muted)' }}>
                 Confirm password
               </label>
-              <input
-                type={inputType}
+              <SecretInput
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 onKeyDown={checkCapsLock}
                 onKeyUp={checkCapsLock}
                 autoComplete="new-password"
-                className="w-full px-3 py-2 rounded text-sm outline-none"
-                style={{
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--separator)',
-                  color: 'var(--text-primary)',
-                }}
+                secretLabel="password confirmation"
+                className="w-full px-3 py-2 pr-10 rounded text-sm outline-none"
+                style={passwordInputStyle}
               />
             </>
           )}
