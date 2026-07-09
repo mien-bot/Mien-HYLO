@@ -19,7 +19,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     (message: string, type: ToastType = 'info') => {
       const id = Date.now() + Math.random()
       setToasts((items) => [...items, { id, message, type }])
-      window.setTimeout(() => dismiss(id), 5000)
+      // Errors need reading time; info/success can clear sooner.
+      window.setTimeout(() => dismiss(id), type === 'error' ? 9000 : 5000)
     },
     [dismiss],
   )
@@ -29,10 +30,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2">
+      <div
+        className="fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2"
+        aria-live="polite"
+        aria-relevant="additions"
+      >
         {toasts.map((toast) => (
           <div
             key={toast.id}
+            role={toast.type === 'error' ? 'alert' : 'status'}
             className="rounded-lg border px-3 py-2 shadow-lg transition-opacity"
             style={{
               background: 'var(--bg-tertiary)',

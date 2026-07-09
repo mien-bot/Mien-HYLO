@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   TrendingUp,
   TrendingDown,
@@ -704,7 +704,11 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="text-xs py-6 text-center" style={{ color: 'var(--text-muted)' }}>
-              No sleep data yet — import Apple Health to populate.
+              No sleep data yet — import Apple Health on the{' '}
+              <Link to="/health" className="underline" style={{ color: 'var(--accent-blue)' }}>
+                Health page
+              </Link>
+              .
             </div>
           )}
         </ChartCard>
@@ -816,7 +820,11 @@ export default function DashboardPage() {
             />
           ) : (
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              No briefings yet. Configure AI in Settings and generate your first briefing.
+              No briefings yet. Configure AI in{' '}
+              <Link to="/settings" className="underline" style={{ color: 'var(--accent-blue)' }}>
+                Settings
+              </Link>{' '}
+              and generate your first briefing.
             </p>
           )}
         </div>
@@ -1506,7 +1514,15 @@ function InvestmentsPanel({
         </h3>
       </div>
       <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>
-        No watchlist or positions yet. Add symbols on the Finance page or positions on Portfolio.
+        No watchlist or positions yet. Add symbols on the{' '}
+        <Link to="/finance" className="underline" style={{ color: 'var(--accent-blue)' }}>
+          Finance page
+        </Link>{' '}
+        or positions on{' '}
+        <Link to="/portfolio" className="underline" style={{ color: 'var(--accent-blue)' }}>
+          Portfolio
+        </Link>
+        .
       </p>
     </div>
   )
@@ -1588,7 +1604,11 @@ function TodayCard({
         </div>
       ) : (
         <p className="text-sm py-4 text-center" style={{ color: 'var(--text-muted)' }}>
-          No schedule yet. Generate one in Productivity.
+          No schedule yet. Generate one in{' '}
+          <Link to="/productivity" className="underline" style={{ color: 'var(--accent-blue)' }}>
+            Productivity
+          </Link>
+          .
         </p>
       )}
     </div>
@@ -1665,7 +1685,11 @@ function WeekendCard({
         </>
       ) : (
         <p className="text-sm py-4 text-center" style={{ color: 'var(--text-muted)' }}>
-          No weekend plan yet. Generate one in Weekend.
+          No weekend plan yet. Generate one in{' '}
+          <Link to="/weekend" className="underline" style={{ color: 'var(--accent-blue)' }}>
+            Weekend
+          </Link>
+          .
         </p>
       )}
     </div>

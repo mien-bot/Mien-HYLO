@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, FormEvent } from 'react'
+import { useEffect, useRef, useState, FormEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { Lock, ArrowRight } from 'lucide-react'
+import SecretInput from './SecretInput'
 
 interface Props {
   mode: 'setup' | 'unlock'
@@ -11,11 +12,16 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [capsLockOn, setCapsLockOn] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
+
+  const checkCapsLock = (e: ReactKeyboardEvent<HTMLInputElement>) => {
+    setCapsLockOn(e.getModifierState('CapsLock'))
+  }
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -60,6 +66,11 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
   }
 
   const isSetup = mode === 'setup'
+  const passwordInputStyle = {
+    background: 'var(--bg-primary)',
+    border: '1px solid var(--separator)',
+    color: 'var(--text-primary)',
+  }
 
   return (
     <div
@@ -97,18 +108,16 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
           <label className="block text-[10px]" style={{ color: 'var(--text-muted)' }}>
             Password
           </label>
-          <input
+          <SecretInput
             ref={inputRef}
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={checkCapsLock}
+            onKeyUp={checkCapsLock}
             autoComplete={isSetup ? 'new-password' : 'current-password'}
-            className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{
-              background: 'var(--bg-primary)',
-              border: '1px solid var(--separator)',
-              color: 'var(--text-primary)',
-            }}
+            secretLabel="password"
+            className="w-full px-3 py-2 pr-10 rounded text-sm outline-none"
+            style={passwordInputStyle}
           />
 
           {isSetup && (
@@ -116,24 +125,28 @@ export default function LockScreen({ mode, onUnlocked }: Props) {
               <label className="block text-[10px] pt-1" style={{ color: 'var(--text-muted)' }}>
                 Confirm password
               </label>
-              <input
-                type="password"
+              <SecretInput
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
+                onKeyDown={checkCapsLock}
+                onKeyUp={checkCapsLock}
                 autoComplete="new-password"
-                className="w-full px-3 py-2 rounded text-sm outline-none"
-                style={{
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--separator)',
-                  color: 'var(--text-primary)',
-                }}
+                secretLabel="password confirmation"
+                className="w-full px-3 py-2 pr-10 rounded text-sm outline-none"
+                style={passwordInputStyle}
               />
             </>
           )}
         </div>
 
+        {capsLockOn && (
+          <div className="text-xs" style={{ color: 'var(--accent-orange, #f59e0b)' }} role="status">
+            Caps Lock is on.
+          </div>
+        )}
+
         {error && (
-          <div className="text-xs" style={{ color: 'var(--accent-red, #ef4444)' }}>
+          <div className="text-xs" style={{ color: 'var(--accent-red, #ef4444)' }} role="alert">
             {error}
           </div>
         )}

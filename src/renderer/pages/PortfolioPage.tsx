@@ -395,6 +395,8 @@ export default function PortfolioPage() {
                         </button>
                         <button
                           onClick={async () => {
+                            const msg = `Remove ${h.symbol} position? This cannot be undone.`
+                            if (!window.confirm(msg)) return
                             await window.api.removeHolding(h.id)
                             refresh()
                           }}
